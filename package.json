@@ -1,0 +1,57 @@
+{
+  "name": "manieramanagementapp",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@artsy/fresnel": "^3.5.0",
+    "@progress/kendo-date-math": "latest",
+    "@progress/kendo-drawing": "latest",
+    "@progress/kendo-licensing": "latest",
+    "@progress/kendo-react-animation": "latest",
+    "@progress/kendo-react-buttons": "latest",
+    "@progress/kendo-react-dateinputs": "latest",
+    "@progress/kendo-react-dialogs": "latest",
+    "@progress/kendo-react-dropdowns": "latest",
+    "@progress/kendo-react-form": "latest",
+    "@progress/kendo-react-inputs": "latest",
+    "@progress/kendo-react-intl": "latest",
+    "@progress/kendo-react-popup": "latest",
+    "@progress/kendo-react-scheduler": "latest",
+    "@progress/kendo-react-treeview": "latest",
+    "cldr-core": "^36.0.0",
+    "cldr-dates-full": "^36.0.0",
+    "cldr-numbers-full": "^36.0.0",
+    "prop-types": "^15.7.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.3.0",
+    "react-scripts": "5.0.1",
+    "semantic-ui-css": "^2.4.1",
+    "semantic-ui-react": "^2.1.3",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
