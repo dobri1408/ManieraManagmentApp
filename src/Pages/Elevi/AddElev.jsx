@@ -13,21 +13,36 @@ import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 import { Materii } from "./data";
 
-function AddElev({ setShow, show }) {
-  const [materii, setMaterii] = useState([]);
-  const [pregatiri, setPregatiri] = useState([]);
-  const [liceu, setLiceu] = useState("");
-  const [numeDeFamilie, setNumeDeFamilie] = useState("");
-  const [prenume, setPrenume] = useState("");
-  const [an, setAn] = useState(0);
-  const [zi, setZi] = useState(0);
-  const [luna, setLuna] = useState(0);
-  const [localitatea, setLocalitatea] = useState("");
-
-  const meditatii = new Map();
+function AddElev({
+  setShow,
+  show,
+  materiiDefault = [],
+  pregatiriDefault = [],
+  liceuDefault = "",
+  numeDeFamilieDefault = "",
+  prenumeDefault = "",
+  anDefault = "",
+  ziDefault = "",
+  lunaDefault = "",
+  localitateDefault = "",
+  clasaDefault = "",
+  id = "",
+}) {
+  const [materii, setMaterii] = useState(materiiDefault);
+  const [pregatiri, setPregatiri] = useState(pregatiriDefault);
+  const [liceu, setLiceu] = useState(liceuDefault);
+  const [numeDeFamilie, setNumeDeFamilie] = useState(numeDeFamilieDefault);
+  const [prenume, setPrenume] = useState(prenumeDefault);
+  const [an, setAn] = useState(anDefault);
+  const [zi, setZi] = useState(ziDefault);
+  const [luna, setLuna] = useState(lunaDefault);
+  const [localitatea, setLocalitatea] = useState(localitateDefault);
+  const [clasa, setClasa] = useState(clasaDefault);
+  const meditatii = new Map(Object.entries(pregatiriDefault));
   async function addToDatabase() {
     console.log(Object.fromEntries(meditatii));
-    await setDoc(doc(db, "elevi", prenume + numeDeFamilie + an + zi + luna), {
+    if (id === "") id = prenume + numeDeFamilie + an + zi + luna;
+    await setDoc(doc(db, "elevi", id), {
       prenume,
       numeDeFamilie,
       an,
@@ -35,9 +50,12 @@ function AddElev({ setShow, show }) {
       luna,
       localitatea,
       liceu,
+      clasa,
       pregatiri: Object.fromEntries(meditatii),
     });
+    if (prenumeDefault) window.location.reload(false);
   }
+  console.log({ pregatiri });
   return (
     <Modal
       size="small"
@@ -52,6 +70,7 @@ function AddElev({ setShow, show }) {
         setAn(0);
         setLuna(0);
         setZi(0);
+        setClasa("");
       }}
       onOpen={() => setShow(true)}
       open={show}
@@ -65,6 +84,7 @@ function AddElev({ setShow, show }) {
             <Input
               type="text"
               placeholder="Nume de Familie"
+              value={numeDeFamilie}
               onChange={(e) => {
                 setNumeDeFamilie(e.target.value);
               }}
@@ -72,6 +92,7 @@ function AddElev({ setShow, show }) {
             <Input
               type="text"
               placeholder="Prenume"
+              value={prenume}
               onChange={(e) => {
                 setPrenume(e.target.value);
               }}
@@ -85,6 +106,7 @@ function AddElev({ setShow, show }) {
             <Label>Data de nastere</Label>
             <Input
               type="number"
+              value={an}
               placeholder="An"
               onChange={(e) => {
                 setAn(e.target.value);
@@ -93,6 +115,7 @@ function AddElev({ setShow, show }) {
             <Input
               type="number"
               placeholder="Luna"
+              value={luna}
               onChange={(e) => {
                 setLuna(e.target.value);
               }}
@@ -100,6 +123,7 @@ function AddElev({ setShow, show }) {
             <Input
               type="number"
               placeholder="Zi"
+              value={zi}
               onChange={(e) => {
                 setZi(e.target.value);
               }}
@@ -113,6 +137,7 @@ function AddElev({ setShow, show }) {
             <Input
               type="text"
               placeholder="Liceu"
+              value={liceu}
               onChange={(e) => {
                 setLiceu(e.target.value);
               }}
@@ -120,8 +145,17 @@ function AddElev({ setShow, show }) {
             <Input
               type="text"
               placeholder="Localitatea"
+              value={localitatea}
               onChange={(e) => {
                 setLocalitatea(e.target.value);
+              }}
+            />
+            <Input
+              type="text"
+              placeholder="Clasa"
+              value={clasa}
+              onChange={(e) => {
+                setClasa(e.target.value);
               }}
             />
           </Form.Field>
@@ -136,6 +170,7 @@ function AddElev({ setShow, show }) {
               fluid
               multiple
               selection
+              value={materii}
               options={Materii}
               onChange={(e, data) => {
                 setMaterii(data.value);
@@ -149,9 +184,6 @@ function AddElev({ setShow, show }) {
           </Form.Field>
           <Form.Field>
             {materii.map((materie) => {
-              {
-                console.log(materie);
-              }
               return (
                 <>
                   <h1>{Materii.find((e) => e.value === materie).text}</h1>
@@ -168,6 +200,7 @@ function AddElev({ setShow, show }) {
                       placeholder="Profesor"
                       fluid
                       selection
+                      value={meditatii.get(materie)?.profesor}
                       onChange={(e, data) =>
                         meditatii.set(materie, { profesor: data.value })
                       }
@@ -194,7 +227,7 @@ function AddElev({ setShow, show }) {
                     <Select
                       placeholder="Tip Plata"
                       fluid
-                      selection
+                      value={meditatii.get(materie)?.plata}
                       onChange={(e, data) => {
                         meditatii.set(materie, {
                           ...meditatii.get(materie),
@@ -210,7 +243,7 @@ function AddElev({ setShow, show }) {
                         {
                           key: "persedinta",
                           text: "Plata per sedinta",
-                          value: "stefanradu",
+                          value: "Plata per sedinta",
                         },
                       ]}
                     />

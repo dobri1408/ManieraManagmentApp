@@ -1,7 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import { Button } from "@progress/kendo-react-buttons";
-import ModalRegisterElev from "./ModalRegisterElev";
+import ModalRegisterElev from "./ModalProfilElev";
 import { Input, Segment } from "semantic-ui-react";
 import { Grid, Image, Loader } from "semantic-ui-react";
 import AddElev from "./AddElev";
