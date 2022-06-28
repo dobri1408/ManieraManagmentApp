@@ -4,6 +4,7 @@ import { createMedia } from "@artsy/fresnel";
 import { Container, Icon, Image, Menu, Sidebar } from "semantic-ui-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import AddMaterie from "./AddMaterie";
 const AppMedia = createMedia({
   breakpoints: {
     mobile: 320,
@@ -25,6 +26,7 @@ const NavBarMobile = (props) => {
     rightItems,
     visible,
     navigation,
+    setShow,
   } = props;
 
   return (
@@ -55,7 +57,7 @@ const NavBarMobile = (props) => {
               <Menu.Item
                 {...item}
                 onClick={() => {
-                  navigation(item);
+                  setShow(true);
                 }}
               />
             ))}
@@ -68,7 +70,7 @@ const NavBarMobile = (props) => {
 };
 
 const NavBarDesktop = (props) => {
-  const { leftItems, rightItems, navigation } = props;
+  const { leftItems, rightItems, navigation, setShow } = props;
 
   return (
     <Menu fixed="top" inverted size={"huge"}>
@@ -90,7 +92,7 @@ const NavBarDesktop = (props) => {
           <Menu.Item
             {...item}
             onClick={() => {
-              navigation(item);
+              setShow(true);
             }}
           />
         ))}
@@ -105,7 +107,7 @@ const NavBarChildren = (props) => (
 
 const NavBar = (props) => {
   const [visible, setVisible] = useState(false);
-
+  const [show, setShow] = useState(false);
   const handlePusher = () => {
     if (visible) setVisible(false);
   };
@@ -120,6 +122,7 @@ const NavBar = (props) => {
   };
   return (
     <div>
+      <AddMaterie setShow={setShow} show={show} />
       <Media at="mobile">
         <NavBarMobile
           leftItems={leftItems}
@@ -128,6 +131,7 @@ const NavBar = (props) => {
           rightItems={rightItems}
           visible={visible}
           navigation={navigation}
+          setShow={setShow}
         >
           <NavBarChildren>{children}</NavBarChildren>
         </NavBarMobile>
@@ -138,6 +142,7 @@ const NavBar = (props) => {
           leftItems={leftItems}
           rightItems={rightItems}
           navigation={navigation}
+          setShow={setShow}
         />
         <NavBarChildren>{children}</NavBarChildren>
       </Media>
@@ -152,8 +157,7 @@ const leftItems = [
   { as: "a", content: "Plati", key: "plati" },
 ];
 const rightItems = [
-  { as: "a", content: "Login", key: "login" },
-  { as: "a", content: "Register", key: "register" },
+  { as: "a", content: "Adauga Materie Noua", key: "addmaterie" },
 ];
 function Navbar() {
   return (
