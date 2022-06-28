@@ -61,16 +61,16 @@ function AddElev({
       size="small"
       onClose={() => {
         setShow(false);
-        setMaterii([]);
-        setPregatiri([]);
-        setLocalitatea("");
-        setPrenume("");
-        setNumeDeFamilie("");
-        setLiceu("");
-        setAn(0);
-        setLuna(0);
-        setZi(0);
-        setClasa("");
+        setMaterii(materiiDefault);
+        setPregatiri(pregatiriDefault);
+        setLocalitatea(localitateDefault);
+        setPrenume(prenumeDefault);
+        setNumeDeFamilie(numeDeFamilieDefault);
+        setLiceu(liceuDefault);
+        setAn(anDefault);
+        setLuna(lunaDefault);
+        setZi(ziDefault);
+        setClasa(clasaDefault);
       }}
       onOpen={() => setShow(true)}
       open={show}

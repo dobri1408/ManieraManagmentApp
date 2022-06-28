@@ -5,6 +5,8 @@ import Orare from "./Pages/Orare/Orare";
 import Navbar from "./Components/Navbar";
 import Elevi from "./Pages/Elevi/Elevi";
 import ElevPage from "./Pages/Elevi/ElevPage";
+import ProfesorPage from "./Pages/Profesori/ProfesorPage";
+import Profesori from "./Pages/Profesori/Profesori";
 function App() {
   return (
     <>
@@ -14,6 +16,8 @@ function App() {
           <Route path="/" element={<Orare />} />
           <Route path="/elevi" element={<Elevi />} />
           <Route path="/elev/:id" element={<ElevPage />} />
+          <Route path="/profesori" element={<Profesori />} />
+          <Route path="/profesor/:id" element={<ProfesorPage />} />
         </Routes>
       </Router>
     </>
