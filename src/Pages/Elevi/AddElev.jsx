@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Header,
@@ -9,7 +9,7 @@ import {
   Dropdown,
 } from "semantic-ui-react";
 import { Divider, Form, Label } from "semantic-ui-react";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDocs, collection } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 import { Materii } from "./data";
 
@@ -29,6 +29,7 @@ function AddElev({
   id = "",
 }) {
   const [materii, setMaterii] = useState(materiiDefault);
+  const [Materii, setMATERII] = useState([]);
   const [pregatiri, setPregatiri] = useState(pregatiriDefault);
   const [liceu, setLiceu] = useState(liceuDefault);
   const [numeDeFamilie, setNumeDeFamilie] = useState(numeDeFamilieDefault);
@@ -38,6 +39,7 @@ function AddElev({
   const [luna, setLuna] = useState(lunaDefault);
   const [localitatea, setLocalitatea] = useState(localitateDefault);
   const [clasa, setClasa] = useState(clasaDefault);
+  const [profesori, setProfesori] = useState([]);
   const meditatii = new Map(Object.entries(pregatiriDefault));
   async function addToDatabase() {
     console.log(Object.fromEntries(meditatii));
@@ -55,7 +57,39 @@ function AddElev({
     });
     if (prenumeDefault) window.location.reload(false);
   }
-  console.log({ pregatiri });
+
+  async function getMateriiFromDatabase() {
+    const querySnapshot = await getDocs(collection(db, "materii"));
+    console.log(querySnapshot);
+    let array = [];
+    querySnapshot.forEach((doc) => {
+      array.push({
+        numeMaterie: doc.data().numeMaterie,
+        profesori: doc.data().profesori,
+      });
+    });
+
+    array.sort();
+    setMATERII(array);
+  }
+  async function getProfesoriFromDatabase() {
+    const querySnapshot = await getDocs(collection(db, "profesori"));
+    console.log(querySnapshot);
+    let array = [];
+    querySnapshot.forEach((doc) => {
+      // doc.data() is never undefined for query doc snapshots
+      console.log(doc.data());
+      console.log(doc.uid);
+      console.log({ ...doc.data(), id: doc.uid });
+      array.push({ ...doc.data(), id: doc.id });
+    });
+    setProfesori(array);
+  }
+
+  useEffect(() => {
+    getMateriiFromDatabase();
+    getProfesoriFromDatabase();
+  }, []);
   return (
     <Modal
       size="small"
@@ -171,7 +205,13 @@ function AddElev({
               multiple
               selection
               value={materii}
-              options={Materii}
+              options={Materii.map((materie) => {
+                return {
+                  text: materie.numeMaterie,
+                  value: materie.numeMaterie,
+                  key: materie.numeMaterie,
+                };
+              })}
               onChange={(e, data) => {
                 setMaterii(data.value);
                 console.log(data.value);
@@ -186,7 +226,7 @@ function AddElev({
             {materii.map((materie) => {
               return (
                 <>
-                  <h1>{Materii.find((e) => e.value === materie).text}</h1>
+                  <h1>{materie}</h1>
                   <Form.Field
                     inline
                     style={{
@@ -204,23 +244,30 @@ function AddElev({
                       onChange={(e, data) =>
                         meditatii.set(materie, { profesor: data.value })
                       }
-                      options={[
-                        {
-                          key: "andreeabucur",
-                          text: "Andreea Bucur",
-                          value: "andreeabucur",
-                        },
-                        {
-                          key: "radustefan",
-                          text: "Stfean Radu",
-                          value: "stefanradu",
-                        },
-                        {
-                          key: "mirceaignat",
-                          text: "Mircea Ignat",
-                          value: "Mircea Ignat",
-                        },
-                      ]}
+                      options={Materii?.find(
+                        (el) => el?.numeMaterie === materie
+                      )?.profesori?.map((profesor) => {
+                        return {
+                          text:
+                            profesori?.find((el) => el?.id === profesor)
+                              ?.numeDeFamilie +
+                            " " +
+                            profesori?.find((el) => el?.id === profesor)
+                              ?.prenume,
+                          value:
+                            profesori?.find((el) => el?.id === profesor)
+                              ?.numeDeFamilie +
+                            " " +
+                            profesori?.find((el) => el?.id === profesor)
+                              ?.prenume,
+                          key:
+                            profesori?.find((el) => el?.id === profesor)
+                              ?.numeDeFamilie +
+                            " " +
+                            profesori?.find((el) => el?.id === profesor)
+                              ?.prenume,
+                        };
+                      })}
                     />
 
                     <Label>Tip Plata</Label>

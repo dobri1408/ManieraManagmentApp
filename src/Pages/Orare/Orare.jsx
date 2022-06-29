@@ -9,6 +9,8 @@ import {
   LocalizationProvider,
   loadMessages,
 } from "@progress/kendo-react-intl";
+import { getDocs, collection } from "firebase/firestore";
+import { db } from "../../firebase/firebase";
 import {
   Scheduler,
   TimelineView,
@@ -86,6 +88,27 @@ function Orare() {
     },
     [setView]
   );
+  async function getDataFromDatabase() {
+    const querySnapshot = await getDocs(collection(db, "profesori"));
+    console.log(querySnapshot);
+    let array = [];
+    querySnapshot.forEach((doc) => {
+      // doc.data() is never undefined for query doc snapshots
+
+      array.push({
+        text: doc.data().prenume + " " + doc.data().numeDeFamilie,
+        value: doc.id,
+        color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+      });
+    });
+    array.sort();
+
+    setProfesori(array);
+  }
+  console.log({ profesori });
+  React.useEffect(() => {
+    getDataFromDatabase();
+  }, []);
   const filter = () => {
     setUpdatedData(data);
     let array = data;
@@ -393,7 +416,6 @@ function Orare() {
         view={view}
         onViewChange={handleViewChange}
         form={FormWithCustomDialog}
-        date={date}
         onDateChange={handleDateChange}
         editable={true}
         modelFields={customModelFields}

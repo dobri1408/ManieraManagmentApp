@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Header,
@@ -9,9 +9,8 @@ import {
   Dropdown,
 } from "semantic-ui-react";
 import { Divider, Form, Label } from "semantic-ui-react";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDocs, collection } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
-import { Materii } from "./data";
 
 function AddProfesor({
   setShow,
@@ -38,11 +37,32 @@ function AddProfesor({
   const [an, setAn] = useState(JSON.parse(JSON.stringify(anDefault)));
   const [zi, setZi] = useState(JSON.parse(JSON.stringify(ziDefault)));
   const [luna, setLuna] = useState(JSON.parse(JSON.stringify(lunaDefault)));
+  const [Materii, setMATERII] = useState([]);
+
   const [localitatea, setLocalitatea] = useState(
     JSON.parse(JSON.stringify(localitateDefault))
   );
   console.log(prenume);
   console.log(materiiDefault);
+  async function getMateriiFromDatabase() {
+    const querySnapshot = await getDocs(collection(db, "materii"));
+    console.log(querySnapshot);
+    let array = [];
+    querySnapshot.forEach((doc) => {
+      array.push({
+        text: doc.data().numeMaterie,
+        key: doc.data().numeMaterie,
+        value: doc.data().numeMaterie,
+        profesori: doc.data().profesori,
+      });
+    });
+
+    array.sort();
+    setMATERII(array);
+  }
+  useEffect(() => {
+    getMateriiFromDatabase();
+  }, []);
   async function addToDatabase() {
     if (id === "") id = prenume + numeDeFamilie + an + zi + luna;
     await setDoc(doc(db, "profesori", id), {
@@ -55,6 +75,20 @@ function AddProfesor({
       materii: materii,
     });
     if (prenumeDefault) window.location.reload(false);
+    materii.forEach(async (materie) => {
+      if (
+        Materii.find((el) => el?.text === materie)?.profesori?.find(
+          (el) => el === id
+        ) === undefined
+      )
+        await setDoc(doc(db, "materii", materie), {
+          numeMaterie: materie,
+          profesori: [
+            ...Materii.find((el) => el?.text === materie)?.profesori,
+            id,
+          ],
+        });
+    });
   }
 
   return (

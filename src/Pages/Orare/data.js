@@ -117,16 +117,3 @@ export const elevi = [
     color: "#FF7272",
   },
 ];
-
-export const profesori = [
-  {
-    text: "Prof 1",
-    value: 1,
-    color: "#5392E4",
-  },
-  {
-    text: "Prof 2",
-    value: 2,
-    color: "#54677B",
-  },
-];

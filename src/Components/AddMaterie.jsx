@@ -10,7 +10,7 @@ import {
   Accordion,
 } from "semantic-ui-react";
 import { Divider, Form, Label } from "semantic-ui-react";
-import { doc, setDoc, getDocs, collection } from "firebase/firestore";
+import { doc, setDoc, getDocs, collection, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 
 function AddMaterie({ setShow, show }) {
@@ -24,6 +24,19 @@ function AddMaterie({ setShow, show }) {
       numeMaterie: numeMaterie,
       profesori: selectedProfesori,
       //TO DO: TREBUIE SA MODIFICE SI LA PROFESORI MATERIA
+    });
+    selectedProfesori.forEach(async (profesor) => {
+      const docRef = doc(db, "profesori", profesor);
+      const docSnap = await getDoc(docRef);
+      const data = docSnap.data();
+      let newMaterii = data.materii;
+      if (newMaterii.find((el) => el === numeMaterie) === undefined)
+        newMaterii = [...newMaterii, numeMaterie];
+      console.log({ newMaterii });
+      await setDoc(doc(db, "profesori", profesor), {
+        ...data,
+        materii: newMaterii,
+      });
     });
     setNumeMaterie("");
     setSelectedProfesori([]);
