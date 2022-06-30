@@ -43,13 +43,9 @@ function App() {
 
   async function getEleviFromDatabase() {
     const querySnapshot = await getDocs(collection(db, "elevi"));
-    console.log(querySnapshot);
+
     let array = [];
     querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      console.log(doc.data());
-      console.log(doc.uid);
-      console.log({ ...doc.data(), id: doc.uid });
       array.push({
         ...doc.data(),
         id: doc.id,
@@ -64,13 +60,9 @@ function App() {
   }
   async function getProfesorFromDatabase() {
     const querySnapshot = await getDocs(collection(db, "profesori"));
-    console.log(querySnapshot);
+
     let array = [];
     querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      console.log(doc.data());
-      console.log(doc.uid);
-      console.log({ ...doc.data(), id: doc.uid });
       array.push({
         ...doc.data(),
         id: doc.id,
@@ -85,13 +77,11 @@ function App() {
   }
   async function getMateriiFromDatabase() {
     const querySnapshot = await getDocs(collection(db, "materii"));
-    console.log(querySnapshot);
+
     let array = [];
     querySnapshot.forEach((doc) => {
       // doc.data() is never undefined for query doc snapshots
-      console.log(doc.data());
-      console.log(doc.uid);
-      console.log({ ...doc.data(), id: doc.uid });
+
       array.push({
         ...doc.data(),
         id: doc.id,
@@ -127,7 +117,7 @@ function App() {
       textField: "text",
       colorField: "color",
     };
-    resourcesArray.push(eleviResource);
+
     const profesoriResource = {
       name: "Profesori",
       data: profesori.map((profesor) => {
@@ -142,8 +132,24 @@ function App() {
       textField: "text",
       colorField: "color",
     };
+    resourcesArray.push(eleviResource);
+    const materiiResource = {
+      name: "Materii",
+      data: materii.map((materie) => {
+        return {
+          text: materie.numeMaterie,
+          value: materie.id,
+          color: getRandomColor(),
+        };
+      }),
+      field: "MateriiIDs",
+      valueField: "value",
+      textField: "text",
+      colorField: "color",
+    };
+    resourcesArray.push(materiiResource);
     resourcesArray.push(profesoriResource);
-    //TO DO: trebuie puse si materiile aici
+
     resourcesArray.push(
       {
         name: "SelectedProfesori",
@@ -169,11 +175,20 @@ function App() {
         textField: "text",
         multiple: true,
         colorField: "color",
+      },
+      {
+        name: "SelectedMaterii",
+        data: [],
+        field: "MateriiIDs",
+        valueField: "value",
+        textField: "text",
+        colorField: "color",
       }
     );
+
     setResources(resourcesArray);
   }, [students, profesori, materii]);
-  console.log(resources, students, profesori, materii);
+
   return (
     <>
       <Router>
@@ -187,6 +202,7 @@ function App() {
                 profesori={profesori}
                 elevi={students}
                 sali={saliResource}
+                materiiFromDataBase={materii}
               />
             }
           />

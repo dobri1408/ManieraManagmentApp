@@ -1,16 +1,7 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { guid } from "@progress/kendo-react-common";
 import { timezoneNames } from "@progress/kendo-date-math";
-import { DropDownList } from "@progress/kendo-react-dropdowns";
-import {
-  IntlProvider,
-  load,
-  LocalizationProvider,
-  loadMessages,
-} from "@progress/kendo-react-intl";
-import { getDocs, collection } from "firebase/firestore";
-import { db } from "../../firebase/firebase";
+import { load, loadMessages } from "@progress/kendo-react-intl";
 import {
   Scheduler,
   TimelineView,
@@ -50,8 +41,7 @@ load(
 );
 loadMessages(esMessages, "es-ES");
 
-function Orare({ resources }) {
-  const timezones = React.useMemo(() => timezoneNames(), []);
+function Orare({ resources, materiiFromDataBase }) {
   const locales = [
     {
       language: "en-US",
@@ -62,7 +52,7 @@ function Orare({ resources }) {
       locale: "es",
     },
   ];
-  console.log({ resources });
+
   const [view, setView] = React.useState("day");
   const [date, setDate] = React.useState(displayDate);
   const [locale, setLocale] = React.useState(locales[0]);
@@ -73,12 +63,15 @@ function Orare({ resources }) {
   const [selectedElevi, setSelectedElevi] = React.useState([]);
   const [profesori, setProfesori] = React.useState([]);
   const [elevi, setElevi] = React.useState([]);
+  const [materii, setMaterii] = React.useState([]);
+  const [selectedMaterii, setSelectedMaterii] = React.useState([]);
   const [timezone, setTimezone] = React.useState("Europe/Bucharest");
   const [customSaliGroupingArray, setCustomSaliGroupingArray] = React.useState([
     resources.sal,
   ]);
   const [orientation, setOrientation] = React.useState("horizontal");
   const [data, setData] = React.useState(sampleDataWithCustomSchema);
+  const divsRef = React.useRef(document.getElementsByClassName("k-form-field"));
   const [updatedData, setUpdatedData] = React.useState(
     sampleDataWithCustomSchema
   );
@@ -93,6 +86,10 @@ function Orare({ resources }) {
     setResources(resources);
   }, [resources]);
 
+  React.useEffect(() => {
+    const divs = document.getElementsByClassName("k-form-field");
+    console.log({ divs });
+  }, [document.getElementsByClassName("k-form-field")]);
   const filter = () => {
     setUpdatedData(data);
     let array = data;
@@ -102,11 +99,20 @@ function Orare({ resources }) {
         SalaIds.push(resources[0].data.find((room) => room.text === sala).value)
       );
     }
+    let MateriiIds = [];
+    if (selectedMaterii.length > 0) {
+      selectedMaterii.forEach((materie) =>
+        MateriiIds.push(
+          resources[2].data.find((subject) => subject.text === materie).value
+        )
+      );
+    }
+
     let ProfesoriIds = [];
     if (selectedProfesori.length > 0) {
       selectedProfesori.forEach((prof) =>
         ProfesoriIds.push(
-          resources[2].data.find((teacher) => teacher.text === prof).value
+          resources[3].data.find((teacher) => teacher.text === prof).value
         )
       );
     }
@@ -123,6 +129,13 @@ function Orare({ resources }) {
       array.filter((appointment) => {
         if (SalaIds.length > 0) {
           if (SalaIds.find((id) => id === appointment.RoomID) === undefined) {
+            return 0;
+          }
+        }
+        if (MateriiIds.length > 0) {
+          if (
+            MateriiIds.find((id) => id === appointment.MateriiIDs) === undefined
+          ) {
             return 0;
           }
         }
@@ -155,18 +168,7 @@ function Orare({ resources }) {
     },
     [setDate]
   );
-  const handleLocaleChange = React.useCallback(
-    (event) => {
-      setLocale(event.target.value);
-    },
-    [setLocale]
-  );
-  const handleTimezoneChange = React.useCallback(
-    (event) => {
-      setTimezone(event.target.value);
-    },
-    [setTimezone]
-  );
+
   const handleOrientationChange = React.useCallback((event) => {
     setOrientation(event.target.getAttribute("data-orientation"));
   }, []);
@@ -198,6 +200,12 @@ function Orare({ resources }) {
     setSelectedSali([...event.value]);
     filter();
   };
+  const handleSelectedMaterii = (event) => {
+    setSelectedMaterii([...event.value]);
+    setSelectedSali(selectedSali);
+    setUpdatedData(data);
+    filter();
+  };
   const handleSelectedProfesori = (event) => {
     setSelectedProfesori([...event.value]);
     setSelectedSali(selectedSali);
@@ -222,6 +230,20 @@ function Orare({ resources }) {
       groupingArray.find((e) => e === "SelectedSali") !== undefined
     ) {
       setGroupingArray(groupingArray.filter((item) => item !== "SelectedSali"));
+    }
+    if (
+      selectedMaterii.length > 0 &&
+      groupingArray.find((e) => e === "SelectedMaterii") === undefined
+    ) {
+      setGroupingArray([...groupingArray, "SelectedMaterii"]);
+    }
+    if (
+      selectedMaterii.length === 0 &&
+      groupingArray.find((e) => e === "SelectedMaterii") !== undefined
+    ) {
+      setGroupingArray(
+        groupingArray.filter((item) => item !== "SelectedMaterii")
+      );
     }
     if (
       selectedProfesori.length > 0 &&
@@ -256,33 +278,47 @@ function Orare({ resources }) {
     selectedElevi,
     selectedProfesori,
     selectedSali,
+    selectedMaterii,
     Resources,
     data,
   ]);
 
   React.useEffect(() => {
-    console.log({ resources });
     if (resources.length > 0) {
-      console.log("nu e 0");
-      resources[4].data = [];
+      resources[5].data = [];
       selectedSali.forEach((item) => {
         const sala = resources[0].data.find((sala) => sala.text === item);
-        console.log({ sala });
-        resources[4].data.push({ ...sala });
+
+        resources[5].data.push({ ...sala });
       });
       setResources([]);
       setResources([...resources]);
       filter();
     }
   }, [selectedSali]);
+  React.useEffect(() => {
+    if (resources.length > 0) {
+      resources[7].data = [];
+      selectedMaterii.forEach((item) => {
+        const materie = resources[2].data.find(
+          (materie) => materie.text === item
+        );
+
+        resources[7].data.push({ ...materie });
+      });
+      setResources([]);
+      setResources([...resources]);
+      filter();
+    }
+  }, [selectedMaterii]);
 
   React.useEffect(() => {
     if (resources.length > 0) {
-      resources[3].data = [];
+      resources[4].data = [];
       selectedProfesori.forEach((item) => {
-        const prof = resources[2].data.find((prof) => prof.text === item);
-        console.log({ prof });
-        resources[3].data.push({ ...prof });
+        const prof = resources[3].data.find((prof) => prof.text === item);
+
+        resources[4].data.push({ ...prof });
       });
       setResources([]);
       setResources([...resources]);
@@ -292,12 +328,11 @@ function Orare({ resources }) {
 
   React.useEffect(() => {
     if (resources.length > 0) {
-      console.log(resources);
-      resources[5].data = [];
+      resources[6].data = [];
       selectedElevi.forEach((item) => {
         const elev = resources[1].data.find((elev) => elev.text === item);
-        console.log({ elev });
-        resources[5].data.push({ ...elev });
+
+        resources[6].data.push({ ...elev });
       });
       setResources([]);
       setResources([...resources]);
@@ -309,17 +344,41 @@ function Orare({ resources }) {
   React.useEffect(() => {
     if (resources.length > 0) {
       setSali(resources[0].data.map((item) => item.text));
-      setProfesori(resources[2].data.map((item) => item.text));
+      setProfesori(resources[3].data.map((item) => item.text));
       setElevi(resources[1].data.map((item) => item.text));
+      setMaterii(resources[2].data.map((item) => item.text));
     }
   }, [resources]);
-  console.log({ Resources });
-  console.log(selectedSali, groupingArray);
+
   React.useEffect(() => {
     setUpdatedData(data);
     filter();
   }, [data]);
-  console.log({ updatedData });
+
+  const filterProfesoriForSelect = () => {
+    if (selectedMaterii.length > 0) {
+      let filteredProfesori = [];
+
+      selectedMaterii?.forEach((materie) => {
+        const profesoriMaterie = materiiFromDataBase.find(
+          (el) => el.numeMaterie === materie
+        )?.profesori;
+
+        profesoriMaterie?.forEach((profesorID) => {
+          const textProfesor = resources[3].data.find(
+            (el) => el.value === profesorID
+          )?.text;
+
+          if (
+            filteredProfesori?.find((el) => el === textProfesor) === undefined
+          )
+            filteredProfesori.push(textProfesor);
+        });
+      });
+      return filteredProfesori;
+    }
+    return profesori;
+  };
 
   return (
     <div>
@@ -342,9 +401,17 @@ function Orare({ resources }) {
             />
           </div>
           <div className="col">
+            <h5>Materii</h5>
+            <MultiSelect
+              data={materii}
+              value={selectedMaterii}
+              onChange={handleSelectedMaterii}
+            />
+          </div>
+          <div className="col">
             <h5>Profesori</h5>
             <MultiSelect
-              data={profesori}
+              data={filterProfesoriForSelect()}
               value={selectedProfesori}
               onChange={handleSelectedProfesori}
             />
@@ -396,6 +463,10 @@ function Orare({ resources }) {
         view={view}
         onViewChange={handleViewChange}
         form={FormWithCustomDialog}
+        workDayStart={"08:00"}
+        workDayEnd={"20:00"}
+        startTime={"08:00"}
+        endTime={"20:00"}
         onDateChange={handleDateChange}
         editable={true}
         modelFields={customModelFields}
@@ -405,11 +476,11 @@ function Orare({ resources }) {
         }}
         resources={Resources}
       >
-        <TimelineView />
-        <DayView />
-        <WeekView />
-        <MonthView />
-        <AgendaView />
+        <TimelineView workDayStart={"08:00"} workDayEnd={"21:00"} />
+        <DayView workDayStart={"08:00"} workDayEnd={"21:00"} />
+        <WeekView workDayStart={"08:00"} workDayEnd={"21:00"} />
+        <MonthView workDayStart={"08:00"} workDayEnd={"21:00"} />
+        <AgendaView workDayStart={"08:00"} workDayEnd={"20:00"} />
       </Scheduler>
     </div>
   );

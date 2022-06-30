@@ -13,7 +13,22 @@ export const CustomFormDialog = (props) => {
   const [, setFormItem] = useSchedulerEditItemFormItemContext();
   const [, setShowRemoveItemDialog] =
     useSchedulerEditItemShowRemoveDialogContext();
-
+  React.useEffect(() => {
+    const divs = document.getElementsByClassName("k-form-field");
+    console.log({ divs });
+    if (divs[13]) {
+      divs[13].parentElement.removeChild(divs[13]);
+    }
+    if (divs[12]) {
+      divs[12].parentElement.removeChild(divs[12]);
+    }
+    if (divs[11]) {
+      divs[11].parentElement.removeChild(divs[11]);
+    }
+    if (divs[10]) {
+      divs[10].parentElement.removeChild(divs[10]);
+    }
+  }, [document.getElementsByClassName("k-form-field")]);
   const Title = (
     <React.Fragment>
       <Button
