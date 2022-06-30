@@ -32,7 +32,7 @@ import { MultiSelect } from "@progress/kendo-react-dropdowns";
 
 import "@progress/kendo-date-math/tz/Europe/Bucharest";
 import esMessages from "./es.json";
-import { resources } from "./data";
+
 import {
   sampleDataWithCustomSchema,
   displayDate,
@@ -50,7 +50,7 @@ load(
 );
 loadMessages(esMessages, "es-ES");
 
-function Orare() {
+function Orare({ resources }) {
   const timezones = React.useMemo(() => timezoneNames(), []);
   const locales = [
     {
@@ -62,6 +62,7 @@ function Orare() {
       locale: "es",
     },
   ];
+  console.log({ resources });
   const [view, setView] = React.useState("day");
   const [date, setDate] = React.useState(displayDate);
   const [locale, setLocale] = React.useState(locales[0]);
@@ -88,27 +89,10 @@ function Orare() {
     },
     [setView]
   );
-  async function getDataFromDatabase() {
-    const querySnapshot = await getDocs(collection(db, "profesori"));
-    console.log(querySnapshot);
-    let array = [];
-    querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-
-      array.push({
-        text: doc.data().prenume + " " + doc.data().numeDeFamilie,
-        value: doc.id,
-        color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-      });
-    });
-    array.sort();
-
-    setProfesori(array);
-  }
-  console.log({ profesori });
   React.useEffect(() => {
-    getDataFromDatabase();
-  }, []);
+    setResources(resources);
+  }, [resources]);
+
   const filter = () => {
     setUpdatedData(data);
     let array = data;
@@ -134,18 +118,15 @@ function Orare() {
         )
       );
     }
-    console.log({ SalaIds });
+
     setUpdatedData(
       array.filter((appointment) => {
         if (SalaIds.length > 0) {
-          console.log({ appointment });
           if (SalaIds.find((id) => id === appointment.RoomID) === undefined) {
-            console.log("intram aici", appointment.RoomId);
             return 0;
           }
         }
         if (ProfesoriIds.length > 0) {
-          console.log({ ProfesoriIds });
           if (
             ProfesoriIds.find((id) => id === appointment.PersonIDs) ===
             undefined
@@ -155,7 +136,7 @@ function Orare() {
         }
         if (EleviIds.length > 0) {
           let ok = 0;
-          console.log({ appointment });
+
           appointment.ElevID.forEach((student) => {
             if (EleviIds.find((id) => id === student)) {
               ok = 1;
@@ -166,12 +147,8 @@ function Orare() {
         return 1;
       })
     );
-    console.log("muie");
   };
 
-  React.useEffect(() => {
-    // filter();
-  }, [selectedSali]);
   const handleDateChange = React.useCallback(
     (event) => {
       setDate(event.value);
@@ -239,14 +216,11 @@ function Orare() {
       groupingArray.find((e) => e === "SelectedSali") === undefined
     ) {
       setGroupingArray([...groupingArray, "SelectedSali"]);
-
-      console.log("intru");
     }
     if (
       selectedSali.length === 0 &&
       groupingArray.find((e) => e === "SelectedSali") !== undefined
     ) {
-      console.log("se poate baby");
       setGroupingArray(groupingArray.filter((item) => item !== "SelectedSali"));
     }
     if (
@@ -254,13 +228,11 @@ function Orare() {
       groupingArray.find((e) => e === "SelectedProfesori") === undefined
     ) {
       setGroupingArray([...groupingArray, "SelectedProfesori"]);
-      console.log("intru");
     }
     if (
       selectedProfesori.length === 0 &&
       groupingArray.find((e) => e === "SelectedProfesori") !== undefined
     ) {
-      console.log("se poate baby");
       setGroupingArray(
         groupingArray.filter((item) => item !== "SelectedProfesori")
       );
@@ -270,13 +242,11 @@ function Orare() {
       groupingArray.find((e) => e === "SelectedElevi") === undefined
     ) {
       setGroupingArray([...groupingArray, "SelectedElevi"]);
-      console.log("intru");
     }
     if (
       selectedElevi.length === 0 &&
       groupingArray.find((e) => e === "SelectedElevi") !== undefined
     ) {
-      console.log("se poate baby");
       setGroupingArray(
         groupingArray.filter((item) => item !== "SelectedElevi")
       );
@@ -291,47 +261,57 @@ function Orare() {
   ]);
 
   React.useEffect(() => {
-    resources[4].data = [];
-    selectedSali.forEach((item) => {
-      const sala = resources[0].data.find((sala) => sala.text === item);
-      console.log({ sala });
-      resources[4].data.push({ ...sala });
-    });
-    setResources([]);
-    setResources([...resources]);
-    filter();
+    console.log({ resources });
+    if (resources.length > 0) {
+      console.log("nu e 0");
+      resources[4].data = [];
+      selectedSali.forEach((item) => {
+        const sala = resources[0].data.find((sala) => sala.text === item);
+        console.log({ sala });
+        resources[4].data.push({ ...sala });
+      });
+      setResources([]);
+      setResources([...resources]);
+      filter();
+    }
   }, [selectedSali]);
 
   React.useEffect(() => {
-    resources[3].data = [];
-    selectedProfesori.forEach((item) => {
-      const prof = resources[2].data.find((prof) => prof.text === item);
-      console.log({ prof });
-      resources[3].data.push({ ...prof });
-    });
-    setResources([]);
-    setResources([...resources]);
-    filter();
+    if (resources.length > 0) {
+      resources[3].data = [];
+      selectedProfesori.forEach((item) => {
+        const prof = resources[2].data.find((prof) => prof.text === item);
+        console.log({ prof });
+        resources[3].data.push({ ...prof });
+      });
+      setResources([]);
+      setResources([...resources]);
+      filter();
+    }
   }, [selectedProfesori]);
 
   React.useEffect(() => {
-    console.log(resources);
-    resources[5].data = [];
-    selectedElevi.forEach((item) => {
-      const elev = resources[1].data.find((elev) => elev.text === item);
-      console.log({ elev });
-      resources[5].data.push({ ...elev });
-    });
-    setResources([]);
-    setResources([...resources]);
-    filter();
+    if (resources.length > 0) {
+      console.log(resources);
+      resources[5].data = [];
+      selectedElevi.forEach((item) => {
+        const elev = resources[1].data.find((elev) => elev.text === item);
+        console.log({ elev });
+        resources[5].data.push({ ...elev });
+      });
+      setResources([]);
+      setResources([...resources]);
+      filter();
+    }
   }, [selectedElevi]);
 
   ///////////////////////////////////////////////
   React.useEffect(() => {
-    setSali(resources[0].data.map((item) => item.text));
-    setProfesori(resources[2].data.map((item) => item.text));
-    setElevi(resources[1].data.map((item) => item.text));
+    if (resources.length > 0) {
+      setSali(resources[0].data.map((item) => item.text));
+      setProfesori(resources[2].data.map((item) => item.text));
+      setElevi(resources[1].data.map((item) => item.text));
+    }
   }, [resources]);
   console.log({ Resources });
   console.log(selectedSali, groupingArray);

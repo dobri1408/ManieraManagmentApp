@@ -9,10 +9,12 @@ import {
   Icon,
 } from "semantic-ui-react";
 import { useState } from "react";
-import { Materii } from "./data";
+import { getDocs, collection } from "firebase/firestore";
+import { db } from "../../firebase/firebase";
 import AddElev from "./AddElev";
 function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
   const [activeIndex, setActiveIndex] = useState();
+  const [Materii, setMaterii] = useState([]);
   const [open, setOpen] = useState(false);
   console.log({ studentData });
   const handleAccordion = (value) => {
@@ -22,6 +24,20 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
     }
     setActiveIndex(value);
   };
+  async function getMateriiFromDatabase() {
+    const querySnapshot = await getDocs(collection(db, "materii"));
+    console.log(querySnapshot);
+    let array = [];
+    querySnapshot.forEach((doc) => {
+      array.push({
+        numeMaterie: doc.data().numeMaterie,
+        profesori: doc.data().profesori,
+      });
+    });
+
+    array.sort();
+    setMaterii(array);
+  }
   return (
     <Modal
       onClose={() => setShow(false)}
@@ -83,7 +99,7 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
                           }}
                         >
                           <Icon name="dropdown" />
-                          {Materii.find((el) => el.key === materie).text}
+                          {materie}
                         </Accordion.Title>
                         <Accordion.Content active={activeIndex === index}>
                           <ul>

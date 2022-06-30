@@ -11,7 +11,6 @@ import {
 import { Divider, Form, Label } from "semantic-ui-react";
 import { doc, setDoc, getDocs, collection } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
-import { Materii } from "./data";
 
 function AddElev({
   setShow,
