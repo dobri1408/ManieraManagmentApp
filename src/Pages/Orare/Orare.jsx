@@ -90,10 +90,10 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   }, [resources]);
 
   React.useEffect(() => {
-    if (sali.length > 0) setSelectedSali([...sali]);
-    setSelectedMaterii([]);
-    setSelectedElevi([]);
-    setSelectedProfesori([]);
+    // if (sali.length > 0) setSelectedSali([...sali]);
+    // setSelectedMaterii([]);
+    // setSelectedElevi([]);
+    // setSelectedProfesori([]);
   }, [sali, orarPrincipal]);
   async function addMeditatieToDatabase(meditatie) {
     const id = meditatie.TaskID;

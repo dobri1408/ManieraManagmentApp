@@ -14,21 +14,33 @@ export const CustomFormDialog = (props) => {
   const [, setShowRemoveItemDialog] =
     useSchedulerEditItemShowRemoveDialogContext();
   React.useEffect(() => {
-    const divs = document.getElementsByClassName("k-form-field");
-    console.log({ divs });
-    if (divs[13]) {
-      divs[13].parentElement.removeChild(divs[13]);
+    const theBigDiv = document.getElementsByClassName(
+      "k-form k-scheduler-edit-form"
+    );
+    if (theBigDiv.length > 0) {
+      const divs = theBigDiv[0].childNodes;
+      let i = 0;
+      for (; i < divs?.length; i++) {
+        console.log(divs[i].className);
+        if (divs[i]?.className === "") {
+          break;
+        }
+      }
+
+      if (divs[i + 7]) {
+        divs[i + 7].parentElement.removeChild(divs[i + 7]);
+      }
+      if (divs[i + 6]) {
+        divs[i + 6].parentElement.removeChild(divs[i + 6]);
+      }
+      if (divs[i + 5]) {
+        divs[i + 5].parentElement.removeChild(divs[i + 5]);
+      }
+      if (divs[i + 4]) {
+        divs[i + 4].parentElement.removeChild(divs[i + 4]);
+      }
     }
-    if (divs[12]) {
-      divs[12].parentElement.removeChild(divs[12]);
-    }
-    if (divs[11]) {
-      divs[11].parentElement.removeChild(divs[11]);
-    }
-    if (divs[10]) {
-      divs[10].parentElement.removeChild(divs[10]);
-    }
-  }, [document.getElementsByClassName("k-form-field")]);
+  }, [document.getElementsByClassName("k-form k-scheduler-edit-form")]);
   const Title = (
     <React.Fragment>
       <Button
