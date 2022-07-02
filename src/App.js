@@ -29,6 +29,31 @@ const saliResource = {
       value: 3,
       color: "#FF7274",
     },
+    {
+      text: "Sala 4",
+      value: 4,
+      color: "#FF7274",
+    },
+    {
+      text: "Sala 5",
+      value: 5,
+      color: "#FF7274",
+    },
+    {
+      text: "Sala 6",
+      value: 6,
+      color: "#FF7274",
+    },
+    {
+      text: "Sala 7",
+      value: 7,
+      color: "#FF7274",
+    },
+    {
+      text: "Sala 8",
+      value: 8,
+      color: "#FF7274",
+    },
   ],
   field: "RoomID",
   valueField: "value",

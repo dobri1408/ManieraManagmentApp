@@ -3,6 +3,7 @@ import { guid } from "@progress/kendo-react-common";
 import { timezoneNames } from "@progress/kendo-date-math";
 import { load, loadMessages } from "@progress/kendo-react-intl";
 import { Day } from "@progress/kendo-date-math";
+import { Button } from "semantic-ui-react";
 import {
   Scheduler,
   TimelineView,
@@ -77,6 +78,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   const [updatedData, setUpdatedData] = React.useState([]);
   const [Resources, setResources] = React.useState(resources);
   const [date, setDate] = React.useState(new Date());
+  const [orarPrincipal, setOrarPrincipal] = React.useState(0);
   const handleViewChange = React.useCallback(
     (event) => {
       setView(event.value);
@@ -112,9 +114,29 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
     ) {
       const rows =
         document?.getElementsByClassName("k-scheduler-head")[0]?.childNodes;
-      rows[1]?.parentElement?.remove(rows[1]);
+      for (let i = 0; i < rows.length; ++i) {
+        const element = rows[i];
+        console.log(element?.firstChild?.firstChild.className);
+        if (
+          element?.firstChild?.firstChild?.className ===
+          "k-scheduler-cell k-heading-cell k-side-cell k-scheduler-times-all-day"
+        ) {
+          console.log(element);
+          element.parentElement.removeChild(element);
+          console.log("se puedo");
+          break;
+        }
+      }
+      console.log({ rows });
     }
-  }, [view, date]);
+  }, [
+    view,
+    date,
+    selectedSali,
+    selectedMaterii,
+    selectedProfesori,
+    selectedElevi,
+  ]);
   React.useEffect(() => {
     let array = [];
     meditatii.forEach((meditatie) => {
@@ -519,6 +541,15 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
             <label className="k-radio-label" htmlFor="vertical">
               Vertical
             </label>
+          </div>
+          <div className="col">
+            <Button
+              onClick={() => {
+                setOrarPrincipal(orarPrincipal + 1);
+              }}
+            >
+              Orar principal
+            </Button>
           </div>
         </div>
       </div>
