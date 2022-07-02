@@ -89,6 +89,12 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
     setResources(resources);
   }, [resources]);
 
+  React.useEffect(() => {
+    if (sali.length > 0) setSelectedSali([...sali]);
+    setSelectedMaterii([]);
+    setSelectedElevi([]);
+    setSelectedProfesori([]);
+  }, [sali, orarPrincipal]);
   async function addMeditatieToDatabase(meditatie) {
     const id = meditatie.TaskID;
     await setDoc(doc(db, "meditatii", id), {
@@ -514,34 +520,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
               onChange={handleSelectedElevi}
             />
           </div>
-          <div className="col">
-            <h5>Orientation:</h5>
-            <input
-              type="radio"
-              name="orientation"
-              id="horizontal"
-              data-orientation="horizontal"
-              className="k-radio k-radio-md"
-              checked={orientation === "horizontal"}
-              onChange={handleOrientationChange}
-            />
-            <label className="k-radio-label" htmlFor="horizontal">
-              Horizontal
-            </label>
-            <br />
-            <input
-              type="radio"
-              name="orientation"
-              id="vertical"
-              data-orientation="vertical"
-              className="k-radio k-radio-md"
-              checked={orientation === "vertical"}
-              onChange={handleOrientationChange}
-            />
-            <label className="k-radio-label" htmlFor="vertical">
-              Vertical
-            </label>
-          </div>
+
           <div className="col">
             <Button
               onClick={() => {
