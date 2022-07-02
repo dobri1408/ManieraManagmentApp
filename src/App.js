@@ -40,6 +40,7 @@ function App() {
   const [students, setStudents] = useState([]);
   const [profesori, setProfesori] = useState([]);
   const [materii, setMaterii] = useState([]);
+  const [meditatii, setMeditatii] = useState([]);
 
   async function getEleviFromDatabase() {
     const querySnapshot = await getDocs(collection(db, "elevi"));
@@ -94,10 +95,25 @@ function App() {
 
     setMaterii(array);
   }
+  async function getMeditatiiFromDatabse() {
+    const querySnapshot = await getDocs(collection(db, "meditatii"));
+
+    let array = [];
+    querySnapshot.forEach((doc) => {
+      // doc.data() is never undefined for query doc snapshots
+
+      array.push({
+        ...doc.data(),
+      });
+    });
+
+    setMeditatii(array);
+  }
   useEffect(() => {
     getEleviFromDatabase();
     getProfesorFromDatabase();
     getMateriiFromDatabase();
+    getMeditatiiFromDatabse();
   }, []);
   useEffect(() => {
     const resourcesArray = [];
@@ -203,6 +219,7 @@ function App() {
                 elevi={students}
                 sali={saliResource}
                 materiiFromDataBase={materii}
+                meditatii={meditatii}
               />
             }
           />

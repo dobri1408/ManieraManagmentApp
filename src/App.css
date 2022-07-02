@@ -36,3 +36,6 @@
     transform: rotate(360deg);
   }
 }
+.k-scheduler-layout-flex .k-scheduler-cell{
+  min-height:2em;
+}

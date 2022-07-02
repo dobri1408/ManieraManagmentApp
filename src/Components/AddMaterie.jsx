@@ -32,7 +32,7 @@ function AddMaterie({ setShow, show }) {
       let newMaterii = data.materii;
       if (newMaterii.find((el) => el === numeMaterie) === undefined)
         newMaterii = [...newMaterii, numeMaterie];
-      console.log({ newMaterii });
+
       await setDoc(doc(db, "profesori", profesor), {
         ...data,
         materii: newMaterii,
@@ -50,7 +50,7 @@ function AddMaterie({ setShow, show }) {
   };
   async function getDataFromDatabase() {
     const querySnapshot = await getDocs(collection(db, "profesori"));
-    console.log(querySnapshot);
+
     let array = [];
     querySnapshot.forEach((doc) => {
       array.push({
@@ -65,7 +65,7 @@ function AddMaterie({ setShow, show }) {
   }
   async function getMateriiFromDatabase() {
     const querySnapshot = await getDocs(collection(db, "materii"));
-    console.log(querySnapshot);
+
     let array = [];
     querySnapshot.forEach((doc) => {
       array.push({
@@ -81,7 +81,7 @@ function AddMaterie({ setShow, show }) {
     getDataFromDatabase();
     getMateriiFromDatabase();
   }, []);
-  console.log(profesori);
+
   return (
     <Modal
       size="small"

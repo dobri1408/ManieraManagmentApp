@@ -2,6 +2,7 @@ import * as React from "react";
 import { guid } from "@progress/kendo-react-common";
 import { timezoneNames } from "@progress/kendo-date-math";
 import { load, loadMessages } from "@progress/kendo-react-intl";
+import { Day } from "@progress/kendo-date-math";
 import {
   Scheduler,
   TimelineView,
@@ -20,15 +21,12 @@ import currencies from "cldr-numbers-full/main/es/currencies.json";
 import caGregorian from "cldr-dates-full/main/es/ca-gregorian.json";
 import timeZoneNames from "cldr-dates-full/main/es/timeZoneNames.json";
 import { MultiSelect } from "@progress/kendo-react-dropdowns";
-
+import { db } from "../../firebase/firebase";
+import { doc, setDoc, getDocs, collection } from "firebase/firestore";
 import "@progress/kendo-date-math/tz/Europe/Bucharest";
 import esMessages from "./es.json";
 
-import {
-  sampleDataWithCustomSchema,
-  displayDate,
-  customModelFields,
-} from "./events-utc.js";
+import { sampleDataWithCustomSchema } from "./events-utc.js";
 load(
   likelySubtags,
   currencyData,
@@ -40,8 +38,17 @@ load(
   timeZoneNames
 );
 loadMessages(esMessages, "es-ES");
-
-function Orare({ resources, materiiFromDataBase }) {
+export const customModelFields = {
+  id: "TaskID",
+  title: "Title",
+  description: "Description",
+  start: "Start",
+  end: "End",
+  recurrenceRule: "RecurrenceRule",
+  recurrenceId: "RecurrenceID",
+  recurrenceExceptions: "RecurrenceException",
+};
+function Orare({ resources, materiiFromDataBase, meditatii }) {
   const locales = [
     {
       language: "en-US",
@@ -54,7 +61,7 @@ function Orare({ resources, materiiFromDataBase }) {
   ];
 
   const [view, setView] = React.useState("day");
-  const [date, setDate] = React.useState(displayDate);
+  //const [date, setDate] = React.useState(displayDate);
   const [locale, setLocale] = React.useState(locales[0]);
   const [groupingArray, setGroupingArray] = React.useState([]);
   const [selectedSali, setSelectedSali] = React.useState([]);
@@ -65,17 +72,11 @@ function Orare({ resources, materiiFromDataBase }) {
   const [elevi, setElevi] = React.useState([]);
   const [materii, setMaterii] = React.useState([]);
   const [selectedMaterii, setSelectedMaterii] = React.useState([]);
-  const [timezone, setTimezone] = React.useState("Europe/Bucharest");
-  const [customSaliGroupingArray, setCustomSaliGroupingArray] = React.useState([
-    resources.sal,
-  ]);
   const [orientation, setOrientation] = React.useState("horizontal");
-  const [data, setData] = React.useState(sampleDataWithCustomSchema);
-  const divsRef = React.useRef(document.getElementsByClassName("k-form-field"));
-  const [updatedData, setUpdatedData] = React.useState(
-    sampleDataWithCustomSchema
-  );
+  const [data, setData] = React.useState([]);
+  const [updatedData, setUpdatedData] = React.useState([]);
   const [Resources, setResources] = React.useState(resources);
+  const [date, setDate] = React.useState(new Date());
   const handleViewChange = React.useCallback(
     (event) => {
       setView(event.value);
@@ -86,10 +87,65 @@ function Orare({ resources, materiiFromDataBase }) {
     setResources(resources);
   }, [resources]);
 
+  async function addMeditatieToDatabase(meditatie) {
+    const id = meditatie.TaskID;
+    await setDoc(doc(db, "meditatii", id), {
+      ...meditatie,
+    });
+  }
   React.useEffect(() => {
-    const divs = document.getElementsByClassName("k-form-field");
-    console.log({ divs });
-  }, [document.getElementsByClassName("k-form-field")]);
+    if (date === undefined || view === undefined) return;
+    console.log("ajung aici");
+
+    console.log(date, date.getDay());
+
+    const rows =
+      document.getElementsByClassName("k-scheduler-body")[0].childNodes;
+    for (let i = 1; i < rows.length; i += 2) {
+      rows[i].style.backgroundColor = "#F5F5F5";
+      console.log("zi de sapatamana");
+    }
+
+    if (
+      document?.getElementsByClassName("k-scheduler-head")[0]?.childNodes
+        .length > 0
+    ) {
+      const rows =
+        document?.getElementsByClassName("k-scheduler-head")[0]?.childNodes;
+      rows[1]?.parentElement?.remove(rows[1]);
+    }
+  }, [view, date]);
+  React.useEffect(() => {
+    let array = [];
+    meditatii.forEach((meditatie) => {
+      let copyOfMeditatie = { ...meditatie };
+      if (copyOfMeditatie.originalStart !== undefined) {
+        copyOfMeditatie.originalStart = new Date(
+          copyOfMeditatie.originalStart.seconds * 1000.0
+        );
+      }
+      if (copyOfMeditatie.originalEnd !== undefined) {
+        copyOfMeditatie.originalEnd = new Date(
+          copyOfMeditatie.originalEnd.seconds * 1000.0
+        );
+      }
+      if (copyOfMeditatie?.RecurrenceException?.length > 0) {
+        copyOfMeditatie.RecurrenceException =
+          copyOfMeditatie.RecurrenceException.map(
+            (el) => new Date(el.seconds * 1000.0)
+          );
+      }
+      array.push({
+        ...copyOfMeditatie,
+        Start: new Date(copyOfMeditatie.Start.seconds * 1000.0),
+        End: new Date(copyOfMeditatie.End.seconds * 1000.0),
+      });
+    });
+
+    setData([...array]);
+    setUpdatedData([...array]);
+  }, [meditatii]);
+
   const filter = () => {
     setUpdatedData(data);
     let array = data;
@@ -162,18 +218,20 @@ function Orare({ resources, materiiFromDataBase }) {
     );
   };
 
-  const handleDateChange = React.useCallback(
-    (event) => {
-      setDate(event.value);
-    },
-    [setDate]
-  );
+  // const handleDateChange = React.useCallback(
+  //   (event) => {
+  //     setDate(event.value);
+  //   },
+  //   [setDate]
+  // );
 
   const handleOrientationChange = React.useCallback((event) => {
     setOrientation(event.target.getAttribute("data-orientation"));
   }, []);
   const handleDataChange = React.useCallback(
     ({ created, updated, deleted }) => {
+      updated.forEach((meditatie) => addMeditatieToDatabase(meditatie));
+
       setData((old) =>
         old
           .filter(
@@ -186,11 +244,16 @@ function Orare({ resources, materiiFromDataBase }) {
               updated.find((current) => current.TaskID === item.TaskID) || item
           )
           .concat(
-            created.map((item) =>
-              Object.assign({}, item, {
+            created.map((item) => {
+              addMeditatieToDatabase(
+                Object.assign({}, item, {
+                  TaskID: guid(),
+                })
+              );
+              return Object.assign({}, item, {
                 TaskID: guid(),
-              })
-            )
+              });
+            })
           )
       );
     },
@@ -379,6 +442,11 @@ function Orare({ resources, materiiFromDataBase }) {
     }
     return profesori;
   };
+  const handleDateChange = (e) => {
+    setDate(e.value);
+    console.log("ma activez");
+    console.log(date);
+  };
 
   return (
     <div>
@@ -460,14 +528,19 @@ function Orare({ resources, materiiFromDataBase }) {
         data={updatedData}
         style={{ height: "auto" }}
         onDataChange={handleDataChange}
+        onDateChange={handleDateChange}
         view={view}
         onViewChange={handleViewChange}
         form={FormWithCustomDialog}
         workDayStart={"08:00"}
-        workDayEnd={"20:00"}
+        allDay={false}
+        workWeekStart={Day.Sunday}
+        workWeekEnd={Day.Saturday}
+        slotDuration={120}
+        workDayEnd={"22:00"}
         startTime={"08:00"}
-        endTime={"20:00"}
-        onDateChange={handleDateChange}
+        majorTick={120}
+        endTime={"22:00"}
         editable={true}
         modelFields={customModelFields}
         group={{
@@ -476,11 +549,30 @@ function Orare({ resources, materiiFromDataBase }) {
         }}
         resources={Resources}
       >
-        <TimelineView workDayStart={"08:00"} workDayEnd={"21:00"} />
-        <DayView workDayStart={"08:00"} workDayEnd={"21:00"} />
-        <WeekView workDayStart={"08:00"} workDayEnd={"21:00"} />
-        <MonthView workDayStart={"08:00"} workDayEnd={"21:00"} />
-        <AgendaView workDayStart={"08:00"} workDayEnd={"20:00"} />
+        <DayView
+          allDay={false}
+          workWeekStart={Day.Saturday}
+          workWeekEnd={Day.Saturday}
+          workDayStart={"08:00"}
+          workDayEnd={"23:00"}
+          slotDuration={120}
+        />
+        <WeekView
+          allDay={false}
+          workWeekStart={Day.Saturday}
+          workWeekEnd={Day.Saturday}
+          workDayStart={"08:00"}
+          slotDuration={120}
+          workDayEnd={"23:00"}
+        />
+        <MonthView
+          allDay={false}
+          workWeekStart={Day.Saturday}
+          workWeekEnd={Day.Saturday}
+          workDayStart={"08:00"}
+          workDayEnd={"23:00"}
+          slotDuration={120}
+        />
       </Scheduler>
     </div>
   );
