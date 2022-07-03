@@ -4,6 +4,7 @@ import { timezoneNames } from "@progress/kendo-date-math";
 import { load, loadMessages } from "@progress/kendo-react-intl";
 import { Day } from "@progress/kendo-date-math";
 import { Button } from "semantic-ui-react";
+import { CustomViewSlot } from "./custom-view-slot";
 
 import {
   Scheduler,
@@ -568,6 +569,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
         onDataChange={handleDataChange}
         onDateChange={handleDateChange}
         view={view}
+        viewSlot={CustomViewSlot}
         onViewChange={handleViewChange}
         form={FormWithCustomDialog}
         workDayStart={"08:00"}
