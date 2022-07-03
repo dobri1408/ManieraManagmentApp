@@ -18,6 +18,8 @@
     "@progress/kendo-react-popup": "latest",
     "@progress/kendo-react-scheduler": "latest",
     "@progress/kendo-react-treeview": "latest",
+    "@reduxjs/toolkit": "^1.8.3",
+    "add": "^2.0.6",
     "cldr-core": "^36.0.0",
     "cldr-dates-full": "^36.0.0",
     "cldr-numbers-full": "^36.0.0",
@@ -25,12 +27,15 @@
     "prop-types": "^15.7.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-redux": "^8.0.2",
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
     "react-search-box": "^2.2.1",
+    "redux": "^4.2.0",
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "^2.1.3",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "yarn": "^1.22.19"
   },
   "scripts": {
     "start": "react-scripts start",

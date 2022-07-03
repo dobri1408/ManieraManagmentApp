@@ -6,30 +6,20 @@ import { db } from "../../firebase/firebase";
 import Orar from "../../Components/Orar/Orar";
 import { Button } from "semantic-ui-react";
 import ModalRegisterProfesor from "./ModalProfilProfesor";
+import { useSelector } from "react-redux";
 function ProfesorPage() {
   const id = useParams()?.id;
-  const [profesorData, setProfesorData] = useState();
   const [show, setShow] = useState(false);
+  const profesorData = useSelector((state) =>
+    state.profesori.find((profesor) => profesor.id === id)
+  );
 
-  async function getProfesorFromDatabase() {
-    const ref = doc(db, "profesori", id);
-    const docSnap = await getDoc(ref);
-    console.log(docSnap.data());
-    setProfesorData({ ...docSnap.data(), id: id });
-  }
-  useEffect(() => {
-    if (id) {
-      getProfesorFromDatabase();
-    }
-  }, [id]);
-  console.log({ profesorData });
   return (
     <>
       <ModalRegisterProfesor
         show={show}
         setShow={setShow}
         profesorData={profesorData}
-        setProfesorData={setProfesorData}
       />
       <div
         style={{

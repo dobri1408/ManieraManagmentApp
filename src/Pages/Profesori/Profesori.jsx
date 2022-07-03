@@ -8,12 +8,14 @@ import AddProfesor from "./AddProfesor";
 import { getDocs, collection } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { db } from "../../firebase/firebase";
+import { useSelector } from "react-redux";
 export default function Profesori() {
   const [show, setShow] = useState(false);
   const [modal, setModal] = useState(false);
   const [profesori, setProfesori] = useState([]);
   const [profesoriGrid, setProfesoriGrid] = useState([]);
   const [inputValue, setInputValue] = useState("");
+  const profesoriFromRedux = useSelector((state) => state.profesori);
   const navigate = useNavigate();
   let inputHandler = (e) => {
     //convert input text to lower case
@@ -21,18 +23,9 @@ export default function Profesori() {
     setInputValue(lowerCase);
   };
   let gridArray = [];
-  async function getDataFromDatabase() {
-    const querySnapshot = await getDocs(collection(db, "profesori"));
-    console.log(querySnapshot);
-    let array = [];
-    querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      console.log(doc.data());
-      console.log(doc.uid);
-      console.log({ ...doc.data(), id: doc.uid });
-      array.push({ ...doc.data(), id: doc.id });
-    });
-    array.sort();
+  useEffect(() => {
+    setProfesori([]);
+    const array = profesoriFromRedux;
 
     setProfesori(
       array.filter((el) => {
@@ -51,11 +44,7 @@ export default function Profesori() {
         }
       })
     );
-  }
-  useEffect(() => {
-    setProfesori([]);
-    getDataFromDatabase(inputValue);
-  }, [show, modal, inputValue]);
+  }, [show, modal, inputValue, profesoriFromRedux]);
   useEffect(() => {
     const chunkSize = 10;
     gridArray = [];

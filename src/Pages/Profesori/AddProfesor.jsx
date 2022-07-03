@@ -11,7 +11,9 @@ import {
 import { Divider, Form, Label } from "semantic-ui-react";
 import { doc, setDoc, getDocs, collection } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
-
+import { useSelector } from "react-redux";
+import { getMaterii, getProfesori } from "../../redux/actions";
+import { useDispatch } from "react-redux";
 function AddProfesor({
   setShow,
   show,
@@ -28,6 +30,7 @@ function AddProfesor({
   const [materii, setMaterii] = useState(
     JSON.parse(JSON.stringify(materiiDefault))
   );
+  const dispatch = useDispatch();
   const [numeDeFamilie, setNumeDeFamilie] = useState(
     JSON.parse(JSON.stringify(numeDeFamilieDefault))
   );
@@ -38,31 +41,26 @@ function AddProfesor({
   const [zi, setZi] = useState(JSON.parse(JSON.stringify(ziDefault)));
   const [luna, setLuna] = useState(JSON.parse(JSON.stringify(lunaDefault)));
   const [Materii, setMATERII] = useState([]);
+  const materiiFromRedux = useSelector((state) => state.materii);
 
   const [localitatea, setLocalitatea] = useState(
     JSON.parse(JSON.stringify(localitateDefault))
   );
-  console.log(prenume);
-  console.log(materiiDefault);
-  async function getMateriiFromDatabase() {
-    const querySnapshot = await getDocs(collection(db, "materii"));
-    console.log(querySnapshot);
+
+  useEffect(() => {
     let array = [];
-    querySnapshot.forEach((doc) => {
+    materiiFromRedux.forEach((doc) => {
       array.push({
-        text: doc.data().numeMaterie,
-        key: doc.data().numeMaterie,
-        value: doc.data().numeMaterie,
-        profesori: doc.data().profesori,
+        text: doc.numeMaterie,
+        key: doc.numeMaterie,
+        value: doc.numeMaterie,
+        profesori: doc.profesori,
       });
     });
 
     array.sort();
     setMATERII(array);
-  }
-  useEffect(() => {
-    getMateriiFromDatabase();
-  }, []);
+  }, [materiiFromRedux]);
   async function addToDatabase() {
     if (id === "") id = prenume + numeDeFamilie + an + zi + luna;
     await setDoc(doc(db, "profesori", id), {
@@ -89,6 +87,8 @@ function AddProfesor({
           ],
         });
     });
+    dispatch(getMaterii());
+    dispatch(getProfesori());
   }
 
   return (

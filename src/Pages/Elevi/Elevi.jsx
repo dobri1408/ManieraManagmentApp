@@ -4,13 +4,13 @@ import { Button } from "@progress/kendo-react-buttons";
 import { Input, Segment } from "semantic-ui-react";
 import { Grid, Image, Loader } from "semantic-ui-react";
 import AddElev from "./AddElev";
-import { getDocs, collection } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { db } from "../../firebase/firebase";
+import { useSelector } from "react-redux";
 export default function Elevi() {
   const [show, setShow] = useState(false);
   const [modal, setModal] = useState(false);
   const [students, setStudents] = useState([]);
+  const elevi = useSelector((state) => state.elevi);
   const [studentsGrid, setStudentsGrid] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const navigate = useNavigate();
@@ -20,19 +20,10 @@ export default function Elevi() {
     setInputValue(lowerCase);
   };
   let gridArray = [];
-  async function getDataFromDatabase() {
-    const querySnapshot = await getDocs(collection(db, "elevi"));
-    console.log(querySnapshot);
-    let array = [];
-    querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      console.log(doc.data());
-      console.log(doc.uid);
-      console.log({ ...doc.data(), id: doc.uid });
-      array.push({ ...doc.data(), id: doc.id });
-    });
-    array.sort();
 
+  useEffect(() => {
+    setStudents([]);
+    let array = elevi;
     setStudents(
       array.filter((el) => {
         if (inputValue === "") {
@@ -44,11 +35,7 @@ export default function Elevi() {
         }
       })
     );
-  }
-  useEffect(() => {
-    setStudents([]);
-    getDataFromDatabase(inputValue);
-  }, [show, modal, inputValue]);
+  }, [show, modal, inputValue, elevi]);
   useEffect(() => {
     const chunkSize = 10;
     gridArray = [];

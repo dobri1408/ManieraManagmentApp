@@ -12,13 +12,18 @@ import {
 import { Divider, Form, Label } from "semantic-ui-react";
 import { doc, setDoc, getDocs, collection, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
+import { useSelector, useDispatch } from "react-redux";
+import { getMaterii, getProfesori } from "../redux/actions";
 
 function AddMaterie({ setShow, show }) {
   const [profesori, setProfesori] = useState([]);
   const [selectedProfesori, setSelectedProfesori] = useState([]);
-  const [materii, setMaterii] = useState([]);
+
   const [numeMaterie, setNumeMaterie] = useState("");
   const [activeIndex, setActiveIndex] = useState();
+  const profesoriFromRedux = useSelector((state) => state.profesori);
+  const materii = useSelector((state) => state.materii);
+  const dispatch = useDispatch();
   async function addToDatabase() {
     await setDoc(doc(db, "materii", numeMaterie), {
       numeMaterie: numeMaterie,
@@ -40,6 +45,8 @@ function AddMaterie({ setShow, show }) {
     });
     setNumeMaterie("");
     setSelectedProfesori([]);
+    dispatch(getMaterii());
+    dispatch(getProfesori());
   }
   const handleAccordion = (index) => {
     if (activeIndex === index) {
@@ -48,13 +55,13 @@ function AddMaterie({ setShow, show }) {
     }
     setActiveIndex(index);
   };
-  async function getDataFromDatabase() {
-    const querySnapshot = await getDocs(collection(db, "profesori"));
 
+  useEffect(() => {
     let array = [];
-    querySnapshot.forEach((doc) => {
+
+    profesoriFromRedux.forEach((doc) => {
       array.push({
-        text: doc.data().prenume + " " + doc.data().numeDeFamilie,
+        text: doc.prenume + " " + doc.numeDeFamilie,
         key: doc.id,
         value: doc.id,
       });
@@ -62,25 +69,7 @@ function AddMaterie({ setShow, show }) {
 
     array.sort();
     setProfesori(array);
-  }
-  async function getMateriiFromDatabase() {
-    const querySnapshot = await getDocs(collection(db, "materii"));
-
-    let array = [];
-    querySnapshot.forEach((doc) => {
-      array.push({
-        numeMaterie: doc.data().numeMaterie,
-        profesori: doc.data().profesori,
-      });
-    });
-
-    array.sort();
-    setMaterii(array);
-  }
-  useEffect(() => {
-    getDataFromDatabase();
-    getMateriiFromDatabase();
-  }, []);
+  }, [profesoriFromRedux]);
 
   return (
     <Modal

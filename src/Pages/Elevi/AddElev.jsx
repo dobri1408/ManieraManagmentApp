@@ -11,6 +11,8 @@ import {
 import { Divider, Form, Label } from "semantic-ui-react";
 import { doc, setDoc, getDocs, collection } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
+import { getElevi } from "../../redux/actions";
+import { useSelector, useDispatch } from "react-redux";
 
 function AddElev({
   setShow,
@@ -28,7 +30,6 @@ function AddElev({
   id = "",
 }) {
   const [materii, setMaterii] = useState(materiiDefault);
-  const [Materii, setMATERII] = useState([]);
   const [pregatiri, setPregatiri] = useState(pregatiriDefault);
   const [liceu, setLiceu] = useState(liceuDefault);
   const [numeDeFamilie, setNumeDeFamilie] = useState(numeDeFamilieDefault);
@@ -38,8 +39,10 @@ function AddElev({
   const [luna, setLuna] = useState(lunaDefault);
   const [localitatea, setLocalitatea] = useState(localitateDefault);
   const [clasa, setClasa] = useState(clasaDefault);
-  const [profesori, setProfesori] = useState([]);
   const meditatii = new Map(Object.entries(pregatiriDefault));
+  const Materii = useSelector((state) => state.materii);
+  const profesori = useSelector((state) => state.profesori);
+  const dispatch = useDispatch();
   async function addToDatabase() {
     console.log(Object.fromEntries(meditatii));
     if (id === "") id = prenume + numeDeFamilie + an + zi + luna;
@@ -54,41 +57,9 @@ function AddElev({
       clasa,
       pregatiri: Object.fromEntries(meditatii),
     });
-    if (prenumeDefault) window.location.reload(false);
+    dispatch(getElevi());
   }
 
-  async function getMateriiFromDatabase() {
-    const querySnapshot = await getDocs(collection(db, "materii"));
-    console.log(querySnapshot);
-    let array = [];
-    querySnapshot.forEach((doc) => {
-      array.push({
-        numeMaterie: doc.data().numeMaterie,
-        profesori: doc.data().profesori,
-      });
-    });
-
-    array.sort();
-    setMATERII(array);
-  }
-  async function getProfesoriFromDatabase() {
-    const querySnapshot = await getDocs(collection(db, "profesori"));
-    console.log(querySnapshot);
-    let array = [];
-    querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      console.log(doc.data());
-      console.log(doc.uid);
-      console.log({ ...doc.data(), id: doc.uid });
-      array.push({ ...doc.data(), id: doc.id });
-    });
-    setProfesori(array);
-  }
-
-  useEffect(() => {
-    getMateriiFromDatabase();
-    getProfesoriFromDatabase();
-  }, []);
   return (
     <Modal
       size="small"

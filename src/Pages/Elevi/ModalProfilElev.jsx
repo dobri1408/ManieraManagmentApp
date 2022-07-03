@@ -24,20 +24,7 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
     }
     setActiveIndex(value);
   };
-  async function getMateriiFromDatabase() {
-    const querySnapshot = await getDocs(collection(db, "materii"));
-    console.log(querySnapshot);
-    let array = [];
-    querySnapshot.forEach((doc) => {
-      array.push({
-        numeMaterie: doc.data().numeMaterie,
-        profesori: doc.data().profesori,
-      });
-    });
 
-    array.sort();
-    setMaterii(array);
-  }
   return (
     <Modal
       onClose={() => setShow(false)}

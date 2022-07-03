@@ -18,27 +18,26 @@ export const CustomFormDialog = (props) => {
       "k-form k-scheduler-edit-form"
     );
     if (theBigDiv.length > 0) {
-      const divs = theBigDiv[0].childNodes;
-      let i = 0;
-      for (; i < divs?.length; i++) {
-        console.log(divs[i].className);
-        if (divs[i]?.className === "") {
-          break;
-        }
-      }
-
-      if (divs[i + 7]) {
-        divs[i + 7].parentElement.removeChild(divs[i + 7]);
-      }
-      if (divs[i + 6]) {
-        divs[i + 6].parentElement.removeChild(divs[i + 6]);
-      }
-      if (divs[i + 5]) {
-        divs[i + 5].parentElement.removeChild(divs[i + 5]);
-      }
-      if (divs[i + 4]) {
-        divs[i + 4].parentElement.removeChild(divs[i + 4]);
-      }
+      // const divs = theBigDiv[0].childNodes;
+      // let i = 0;
+      // for (; i < divs?.length; i++) {
+      //   console.log(divs[i].className);
+      //   if (divs[i]?.className === "") {
+      //     break;
+      //   }
+      // }
+      // if (divs[i + 7]) {
+      //   divs[i + 7].parentElement.removeChild(divs[i + 7]);
+      // }
+      // if (divs[i + 6]) {
+      //   divs[i + 6].parentElement.removeChild(divs[i + 6]);
+      // }
+      // if (divs[i + 5]) {
+      //   divs[i + 5].parentElement.removeChild(divs[i + 5]);
+      // }
+      // if (divs[i + 4]) {
+      //   divs[i + 4].parentElement.removeChild(divs[i + 4]);
+      // }
     }
   }, [document.getElementsByClassName("k-form k-scheduler-edit-form")]);
   const Title = (

@@ -12,6 +12,13 @@ import Profesori from "./Pages/Profesori/Profesori";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "./firebase/firebase";
 import { getRandomColor } from "./utils/utils";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  getProfesori,
+  getElevi,
+  getMaterii,
+  getMeditatii,
+} from "./redux/actions";
 const saliResource = {
   name: "Sali",
   data: [
@@ -62,90 +69,24 @@ const saliResource = {
 };
 function App() {
   const [resources, setResources] = useState([]);
-  const [students, setStudents] = useState([]);
-  const [profesori, setProfesori] = useState([]);
-  const [materii, setMaterii] = useState([]);
-  const [meditatii, setMeditatii] = useState([]);
+  const elevi = useSelector((state) => state.elevi);
+  const profesori = useSelector((state) => state.profesori);
+  const materii = useSelector((state) => state.materii);
+  const meditatii = useSelector((state) => state.meditatii);
+  const dispatch = useDispatch();
 
-  async function getEleviFromDatabase() {
-    const querySnapshot = await getDocs(collection(db, "elevi"));
-
-    let array = [];
-    querySnapshot.forEach((doc) => {
-      array.push({
-        ...doc.data(),
-        id: doc.id,
-        text: doc.data().prenume + " " + doc.data().numeDeFamilie,
-        value: doc.id,
-        color: getRandomColor(),
-      });
-    });
-    array.sort();
-
-    setStudents(array);
-  }
-  async function getProfesorFromDatabase() {
-    const querySnapshot = await getDocs(collection(db, "profesori"));
-
-    let array = [];
-    querySnapshot.forEach((doc) => {
-      array.push({
-        ...doc.data(),
-        id: doc.id,
-        text: doc.data().prenume + " " + doc.data().numeDeFamilie,
-        value: doc.id,
-        color: getRandomColor(),
-      });
-    });
-    array.sort();
-
-    setProfesori(array);
-  }
-  async function getMateriiFromDatabase() {
-    const querySnapshot = await getDocs(collection(db, "materii"));
-
-    let array = [];
-    querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-
-      array.push({
-        ...doc.data(),
-        id: doc.id,
-        text: doc.data().numeMaterie,
-        value: doc.id,
-        color: getRandomColor(),
-      });
-    });
-    array.sort();
-
-    setMaterii(array);
-  }
-  async function getMeditatiiFromDatabse() {
-    const querySnapshot = await getDocs(collection(db, "meditatii"));
-
-    let array = [];
-    querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-
-      array.push({
-        ...doc.data(),
-      });
-    });
-
-    setMeditatii(array);
-  }
   useEffect(() => {
-    getEleviFromDatabase();
-    getProfesorFromDatabase();
-    getMateriiFromDatabase();
-    getMeditatiiFromDatabse();
+    dispatch(getMaterii());
+    dispatch(getProfesori());
+    dispatch(getMeditatii());
+    dispatch(getElevi());
   }, []);
   useEffect(() => {
     const resourcesArray = [];
     resourcesArray.push(saliResource);
     const eleviResource = {
       name: "Elevi",
-      data: students.map((student) => {
+      data: elevi.map((student) => {
         return {
           text: student.prenume + " " + student.numeDeFamilie,
           value: student.id,
@@ -228,7 +169,7 @@ function App() {
     );
 
     setResources(resourcesArray);
-  }, [students, profesori, materii]);
+  }, [elevi, profesori, materii]);
 
   return (
     <>
@@ -241,7 +182,7 @@ function App() {
               <Orare
                 resources={resources}
                 profesori={profesori}
-                elevi={students}
+                elevi={elevi}
                 sali={saliResource}
                 materiiFromDataBase={materii}
                 meditatii={meditatii}
