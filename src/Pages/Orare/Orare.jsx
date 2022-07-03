@@ -455,9 +455,9 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
     filter();
   }, [data]);
   const getTheStyleForSchelunder = (numberOfCells) => {
-    let style = { height: "auto", overflowY: "scroll" };
+    let style = { height: "auto" };
     let numberOfDays = 1;
-    let pixelsPerSqure = 120;
+    let pixelsPerSqure = 100;
     if (view === "day") numberOfDays = 1;
     else if (view === "month") {
       numberOfDays = 30;

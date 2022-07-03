@@ -5,14 +5,14 @@ export const CustomViewSlot = (props) => {
   console.log(props.index, props.range.index);
   if (props.index === 0 || props.range.index === 0) {
     customStyle = {
-      borderLeft: "1px solid black",
+      borderLeft: "2px solid black",
     };
   }
   return (
     <SchedulerViewSlot
       {...props}
       expandable={false}
-      style={{ ...props.style, ...customStyle }}
+      style={{ ...props.style, ...customStyle, overflowX: "hidden" }}
     />
   );
 };

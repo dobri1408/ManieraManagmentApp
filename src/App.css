@@ -36,3 +36,11 @@
     transform: rotate(360deg);
   }
 }
+.k-scheduler-cell
+  .k-group-cell
+  .k-scheduler-row
+  .k-middle-row
+  .k-scheduler-row
+  .k-scheduler-body {
+  overflow-x: hidden;
+}
