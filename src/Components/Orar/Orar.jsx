@@ -111,18 +111,15 @@ function Orar() {
         )
       );
     }
-    console.log({ SalaIds });
+
     setUpdatedData(
       array.filter((appointment) => {
         if (SalaIds.length > 0) {
-          console.log({ appointment });
           if (SalaIds.find((id) => id === appointment.RoomID) === undefined) {
-            console.log("intram aici", appointment.RoomId);
             return 0;
           }
         }
         if (ProfesoriIds.length > 0) {
-          console.log({ ProfesoriIds });
           if (
             ProfesoriIds.find((id) => id === appointment.PersonIDs) ===
             undefined
@@ -132,7 +129,7 @@ function Orar() {
         }
         if (EleviIds.length > 0) {
           let ok = 0;
-          console.log({ appointment });
+
           appointment.ElevID.forEach((student) => {
             if (EleviIds.find((id) => id === student)) {
               ok = 1;
@@ -143,7 +140,6 @@ function Orar() {
         return 1;
       })
     );
-    console.log("muie");
   };
 
   React.useEffect(() => {
@@ -216,14 +212,11 @@ function Orar() {
       groupingArray.find((e) => e === "SelectedSali") === undefined
     ) {
       setGroupingArray([...groupingArray, "SelectedSali"]);
-
-      console.log("intru");
     }
     if (
       selectedSali.length === 0 &&
       groupingArray.find((e) => e === "SelectedSali") !== undefined
     ) {
-      console.log("se poate baby");
       setGroupingArray(groupingArray.filter((item) => item !== "SelectedSali"));
     }
     if (
@@ -231,13 +224,11 @@ function Orar() {
       groupingArray.find((e) => e === "SelectedProfesori") === undefined
     ) {
       setGroupingArray([...groupingArray, "SelectedProfesori"]);
-      console.log("intru");
     }
     if (
       selectedProfesori.length === 0 &&
       groupingArray.find((e) => e === "SelectedProfesori") !== undefined
     ) {
-      console.log("se poate baby");
       setGroupingArray(
         groupingArray.filter((item) => item !== "SelectedProfesori")
       );
@@ -247,13 +238,11 @@ function Orar() {
       groupingArray.find((e) => e === "SelectedElevi") === undefined
     ) {
       setGroupingArray([...groupingArray, "SelectedElevi"]);
-      console.log("intru");
     }
     if (
       selectedElevi.length === 0 &&
       groupingArray.find((e) => e === "SelectedElevi") !== undefined
     ) {
-      console.log("se poate baby");
       setGroupingArray(
         groupingArray.filter((item) => item !== "SelectedElevi")
       );
@@ -271,7 +260,7 @@ function Orar() {
     resources[4].data = [];
     selectedSali.forEach((item) => {
       const sala = resources[0].data.find((sala) => sala.text === item);
-      console.log({ sala });
+
       resources[4].data.push({ ...sala });
     });
     setResources([]);
@@ -283,7 +272,7 @@ function Orar() {
     resources[3].data = [];
     selectedProfesori.forEach((item) => {
       const prof = resources[2].data.find((prof) => prof.text === item);
-      console.log({ prof });
+
       resources[3].data.push({ ...prof });
     });
     setResources([]);
@@ -292,11 +281,10 @@ function Orar() {
   }, [selectedProfesori]);
 
   React.useEffect(() => {
-    console.log(resources);
     resources[5].data = [];
     selectedElevi.forEach((item) => {
       const elev = resources[1].data.find((elev) => elev.text === item);
-      console.log({ elev });
+
       resources[5].data.push({ ...elev });
     });
     setResources([]);
@@ -310,13 +298,11 @@ function Orar() {
     setProfesori(resources[2].data.map((item) => item.text));
     setElevi(resources[1].data.map((item) => item.text));
   }, [resources]);
-  console.log({ Resources });
-  console.log(selectedSali, groupingArray);
+
   React.useEffect(() => {
     setUpdatedData(data);
     filter();
   }, [data]);
-  console.log({ updatedData });
 
   return (
     <div>

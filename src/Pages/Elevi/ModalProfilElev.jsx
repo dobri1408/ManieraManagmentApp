@@ -16,7 +16,7 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
   const [activeIndex, setActiveIndex] = useState();
   const [Materii, setMaterii] = useState([]);
   const [open, setOpen] = useState(false);
-  console.log({ studentData });
+
   const handleAccordion = (value) => {
     if (activeIndex === value) {
       setActiveIndex(null);

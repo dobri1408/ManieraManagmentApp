@@ -5,7 +5,8 @@ import { load, loadMessages } from "@progress/kendo-react-intl";
 import { Day } from "@progress/kendo-date-math";
 import { Button } from "semantic-ui-react";
 import { CustomViewSlot } from "./custom-view-slot";
-
+import { EditItemWithDynamicTitle } from "./custom-item";
+import { FormWithCustomEditor } from "./custom-form";
 import {
   Scheduler,
   TimelineView,
@@ -27,6 +28,7 @@ import { MultiSelect } from "@progress/kendo-react-dropdowns";
 import { db } from "../../firebase/firebase";
 import { doc, setDoc, getDocs, collection } from "firebase/firestore";
 import "@progress/kendo-date-math/tz/Europe/Bucharest";
+import { getRandomColor } from "../../utils/utils";
 import esMessages from "./es.json";
 
 import { sampleDataWithCustomSchema } from "./events-utc.js";
@@ -82,6 +84,9 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   const [date, setDate] = React.useState(new Date());
   const [orarPrincipal, setOrarPrincipal] = React.useState(0);
   const [numberOfCells, setNumberOfCells] = React.useState(1);
+  const divs = React.useRef(
+    document.getElementsByClassName("k-scheduler-body")
+  );
   const handleViewChange = React.useCallback(
     (event) => {
       setView(event.value);
@@ -104,17 +109,16 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
       ...meditatie,
     });
   }
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (date === undefined || view === undefined) return;
-    console.log("ajung aici");
-
-    console.log(date, date.getDay());
 
     const rows =
       document.getElementsByClassName("k-scheduler-body")[0].childNodes;
+    console.log({ rows });
+    if (rows.length === 0 || rows === undefined) return;
     for (let i = 1; i < rows.length; i += 2) {
-      rows[i].style.backgroundColor = "#F5F5F5";
-      console.log("zi de sapatamana");
+      if (rows[i].className === "k-scheduler-group k-group-horizontal")
+        rows[i].style.backgroundColor = "#F5F5F5";
     }
 
     if (
@@ -125,18 +129,14 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
         document?.getElementsByClassName("k-scheduler-head")[0]?.childNodes;
       for (let i = 0; i < rows.length; ++i) {
         const element = rows[i];
-        console.log(element?.firstChild?.firstChild.className);
         if (
           element?.firstChild?.firstChild?.className ===
           "k-scheduler-cell k-heading-cell k-side-cell k-scheduler-times-all-day"
         ) {
-          console.log(element);
           element.parentElement.removeChild(element);
-          console.log("se puedo");
           break;
         }
       }
-      console.log({ rows });
     }
   }, [
     view,
@@ -145,6 +145,9 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
     selectedMaterii,
     selectedProfesori,
     selectedElevi,
+    divs,
+    data,
+    updatedData,
   ]);
   React.useEffect(() => {
     let array = [];
@@ -501,8 +504,6 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   };
   const handleDateChange = (e) => {
     setDate(e.value);
-    console.log("ma activez");
-    console.log(date);
   };
 
   return (
@@ -571,7 +572,6 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
         view={view}
         viewSlot={CustomViewSlot}
         onViewChange={handleViewChange}
-        form={FormWithCustomDialog}
         workDayStart={"08:00"}
         allDay={false}
         workWeekStart={Day.Sunday}
@@ -581,6 +581,8 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
         startTime={"08:00"}
         majorTick={120}
         endTime={"22:00"}
+        editItem={EditItemWithDynamicTitle}
+        form={FormWithCustomEditor}
         editable={true}
         modelFields={customModelFields}
         group={{

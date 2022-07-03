@@ -13,7 +13,7 @@ function ElevPage() {
     state.elevi.find((elev) => elev.id === id)
   );
   const [show, setShow] = useState(false);
-  console.log(studentData);
+
   return (
     <>
       <ModalRegisterElev

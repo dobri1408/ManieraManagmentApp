@@ -54,7 +54,7 @@ export default function Profesori() {
     }
     setProfesoriGrid(gridArray);
   }, [profesori]);
-  console.log(profesori);
+
   return (
     <>
       <div
@@ -87,7 +87,6 @@ export default function Profesori() {
           return (
             <Grid.Row columns={4} style={{ paddingTop: "5vh" }}>
               {array.map((profesor) => {
-                console.log({ profesor });
                 return (
                   <Grid.Column style={{ paddingTop: "5vh" }}>
                     <Segment

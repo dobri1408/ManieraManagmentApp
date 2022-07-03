@@ -28,8 +28,6 @@ export const CustomFormDialog = (props) => {
       </Button>
     </React.Fragment>
   );
-  {
-    console.log(props);
-  }
+
   return <Dialog {...props} title={Title} />;
 };

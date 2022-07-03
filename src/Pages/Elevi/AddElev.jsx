@@ -44,7 +44,6 @@ function AddElev({
   const profesori = useSelector((state) => state.profesori);
   const dispatch = useDispatch();
   async function addToDatabase() {
-    console.log(Object.fromEntries(meditatii));
     if (id === "") id = prenume + numeDeFamilie + an + zi + luna;
     await setDoc(doc(db, "elevi", id), {
       prenume,
@@ -184,7 +183,6 @@ function AddElev({
               })}
               onChange={(e, data) => {
                 setMaterii(data.value);
-                console.log(data.value);
               }}
             />
           </Form.Field>

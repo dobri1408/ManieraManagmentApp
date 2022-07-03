@@ -45,7 +45,7 @@ export default function Elevi() {
     }
     setStudentsGrid(gridArray);
   }, [students]);
-  console.log(students);
+
   return (
     <>
       <div
@@ -78,7 +78,6 @@ export default function Elevi() {
           return (
             <Grid.Row columns={5} style={{ paddingTop: "5vh" }}>
               {array.map((student) => {
-                console.log({ student });
                 return (
                   <Grid.Column style={{ paddingTop: "5vh" }}>
                     <Segment

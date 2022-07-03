@@ -117,7 +117,6 @@ const NavBar = (props) => {
   const { children, leftItems, rightItems } = props;
   const navigate = useNavigate();
   const navigation = (item) => {
-    console.log("dsds");
     navigate("/" + item.key);
   };
   return (

@@ -189,7 +189,6 @@ function AddProfesor({
               options={Materii}
               onChange={(e, data) => {
                 setMaterii(data.value);
-                console.log(data.value);
               }}
             />
           </Form.Field>
