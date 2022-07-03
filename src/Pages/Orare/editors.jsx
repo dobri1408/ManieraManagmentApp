@@ -26,15 +26,22 @@ export const SalaEditor = (props) => {
 export const EleviEditor = (props) => {
   const elevi = useSelector((state) => state.elevi);
 
-  const [slectedElevi, setSelectedElevi] = useState(
-    props?.value?.map((valueId) => elevi?.find((elev) => elev?.id === valueId))
-  );
+  const [slectedElevi, setSelectedElevi] = useState([]);
+  React.useEffect(() => {
+    const array = props?.value?.map((valueId) =>
+      elevi?.find((elev) => elev?.id === valueId)
+    );
+    console.log(array);
+    if (array === undefined) setSelectedElevi([]);
+    else setSelectedElevi([...array]);
+  }, [props]);
+  console.log(slectedElevi);
   const handleChange = (event) => {
-    setSelectedElevi([...slectedElevi, event.value]);
-
+    setSelectedElevi(event.value);
+    console.log(event.value);
     if (props.onChange) {
       props.onChange.call([], {
-        value: event.value,
+        value: event.value.map((elev) => elev.id),
       });
     }
   };
