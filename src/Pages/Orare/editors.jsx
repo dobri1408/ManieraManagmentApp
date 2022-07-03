@@ -24,21 +24,17 @@ export const SalaEditor = (props) => {
   );
 };
 export const EleviEditor = (props) => {
-  const [selectedEleviIds, setSelectedEleviIds] = useState(props?.value);
   const elevi = useSelector((state) => state.elevi);
 
   const [slectedElevi, setSelectedElevi] = useState(
-    props?.value?.map(
-      (valueId) => elevi?.find((elev) => elev?.id === valueId).text
-    )
+    props?.value?.map((valueId) => elevi?.find((elev) => elev?.id === valueId))
   );
   const handleChange = (event) => {
-    setSelectedElevi([...slectedElevi, event.value.text]);
-    setSelectedEleviIds([...selectedEleviIds, event.value.id]);
+    setSelectedElevi([...slectedElevi, event.value]);
 
     if (props.onChange) {
       props.onChange.call([], {
-        value: event.value.map((e) => e.id),
+        value: event.value,
       });
     }
   };
@@ -49,6 +45,7 @@ export const EleviEditor = (props) => {
       value={slectedElevi}
       data={elevi}
       dataItemKey={"id"}
+      textField={"text"}
     />
   );
 };
