@@ -4,6 +4,7 @@ import { timezoneNames } from "@progress/kendo-date-math";
 import { load, loadMessages } from "@progress/kendo-react-intl";
 import { Day } from "@progress/kendo-date-math";
 import { Button } from "semantic-ui-react";
+
 import {
   Scheduler,
   TimelineView,
@@ -79,6 +80,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   const [Resources, setResources] = React.useState(resources);
   const [date, setDate] = React.useState(new Date());
   const [orarPrincipal, setOrarPrincipal] = React.useState(0);
+  const [numberOfCells, setNumberOfCells] = React.useState(1);
   const handleViewChange = React.useCallback(
     (event) => {
       setView(event.value);
@@ -90,10 +92,10 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   }, [resources]);
 
   React.useEffect(() => {
-    // if (sali.length > 0) setSelectedSali([...sali]);
-    // setSelectedMaterii([]);
-    // setSelectedElevi([]);
-    // setSelectedProfesori([]);
+    if (sali.length > 0) setSelectedSali([...sali]);
+    setSelectedMaterii([]);
+    setSelectedElevi([]);
+    setSelectedProfesori([]);
   }, [sali, orarPrincipal]);
   async function addMeditatieToDatabase(meditatie) {
     const id = meditatie.TaskID;
@@ -310,6 +312,12 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
     filter();
   };
   React.useEffect(() => {
+    setNumberOfCells(
+      Math.max(1, selectedSali.length) *
+        Math.max(1, selectedProfesori.length) *
+        Math.max(1, selectedMaterii.length) *
+        Math.max(1, selectedElevi.length)
+    );
     if (
       selectedSali.length > 0 &&
       groupingArray.find((e) => e === "SelectedSali") === undefined
@@ -445,6 +453,26 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
     setUpdatedData(data);
     filter();
   }, [data]);
+  const getTheStyleForSchelunder = (numberOfCells) => {
+    let style = { height: "auto", overflowY: "scroll" };
+    let numberOfDays = 1;
+    let pixelsPerSqure = 120;
+    if (view === "day") numberOfDays = 1;
+    else if (view === "month") {
+      numberOfDays = 30;
+      pixelsPerSqure = 35;
+    } else if (view === "week") {
+      numberOfDays = 7;
+      pixelsPerSqure = 80;
+    }
+    if (numberOfCells * pixelsPerSqure * numberOfDays > window.innerWidth) {
+      style = {
+        ...style,
+        width: numberOfCells * pixelsPerSqure * numberOfDays,
+      };
+    }
+    return style;
+  };
 
   const filterProfesoriForSelect = () => {
     if (selectedMaterii.length > 0) {
@@ -477,7 +505,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   };
 
   return (
-    <div>
+    <div style={{ overflowY: "scroll" }}>
       <div
         className="example-config"
         style={{
@@ -536,7 +564,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
         timezone="Europe/Bucharest"
         height={"90vh"}
         data={updatedData}
-        style={{ height: "auto" }}
+        style={getTheStyleForSchelunder(numberOfCells)}
         onDataChange={handleDataChange}
         onDateChange={handleDateChange}
         view={view}
