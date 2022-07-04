@@ -3,13 +3,35 @@ import { FormElement, Field } from "@progress/kendo-react-form";
 import { Label, Error } from "@progress/kendo-react-labels";
 import { TextArea } from "@progress/kendo-react-inputs";
 import { DatePicker, DateTimePicker } from "@progress/kendo-react-dateinputs";
+import { DropDownList } from "@progress/kendo-react-dropdowns";
 import {
   SalaEditor,
   EleviEditor,
   MaterieEditor,
   ProfesorEditor,
 } from "./editors";
+import { RadioButton } from "@progress/kendo-react-inputs";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { RadioGroup } from "@progress/kendo-react-inputs";
 export const CustomFormEditor = (props) => {
+  console.log(props.valueGetter("ElevID"));
+  const eleviFromRedux = useSelector((state) => state.elevi);
+  const [elevi, setElevi] = useState([]);
+  const [selectedValue, setSelectedValue] = useState("neconfirmat");
+
+  useEffect(() => {
+    let array = props
+      .valueGetter("ElevID")
+      .map((elev) => eleviFromRedux.find((elevRedux) => elevRedux.id === elev));
+    setElevi(array);
+  }, [props]);
+  const handleChange = React.useCallback(
+    (e) => {
+      setSelectedValue(e.value);
+    },
+    [setSelectedValue]
+  );
   return (
     <FormElement horizontal={true}>
       <div className="k-form-field">
@@ -17,6 +39,43 @@ export const CustomFormEditor = (props) => {
         <div className="k-form-field-wrap">
           <Field name={"RoomID"} component={SalaEditor} />
           {props.errors.Sala && <Error>{props.errors.Sala}</Error>}
+        </div>
+      </div>
+      <div className="k-form-field">
+        <Label>Plata si Prezenta</Label>
+        <div
+          style={{
+            display: "inline-block",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {elevi.map((elev, index) => {
+            return (
+              <div style={{ display: "block" }}>
+                <div style={{ fontWeight: "bold" }}>
+                  {index + 1}. {elev.text}
+                </div>
+
+                <RadioGroup
+                  layout="horizontal"
+                  data={[
+                    { label: "Neconfirmat", value: "neconfirmat" },
+                    { label: "Platit", value: "platit" },
+                    { label: "Neplatit", value: "neplatit" },
+                  ]}
+                />
+                <RadioGroup
+                  layout="horizontal"
+                  data={[
+                    { label: "Neconfirmat", value: "neconfirmat" },
+                    { label: "Prezent", value: "Prezent" },
+                    { label: "Absent", value: "Absent" },
+                  ]}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
       <div className="k-form-field">
