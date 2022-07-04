@@ -12,6 +12,7 @@ import { useState } from "react";
 import { getDocs, collection } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 import AddElev from "./AddElev";
+import { getPrescurtare } from "../../utils/utils";
 function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
   const [activeIndex, setActiveIndex] = useState();
   const [Materii, setMaterii] = useState([]);
@@ -74,34 +75,48 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
             <Accordion styled>
               {
                 //e obiect
-                Object.entries({ ...studentData?.pregatiri }).map(
-                  ([materie, value], index) => {
-                    return (
-                      <>
-                        <Accordion.Title
-                          active={activeIndex === index}
-                          index={0}
-                          onClick={() => {
-                            handleAccordion(index);
-                          }}
-                        >
-                          <Icon name="dropdown" />
-                          {materie}
-                        </Accordion.Title>
-                        <Accordion.Content active={activeIndex === index}>
-                          <ul>
-                            <li>Profesor: {value.profesor}</li>
-                            <li>Tip Plata: {value.plata}</li>
-                            <li>
-                              Efectuat din abonament: 2/4 (16.08.2022,
-                              18.08.2022, 18.08.2022)
-                            </li>
-                          </ul>
-                        </Accordion.Content>
-                      </>
-                    );
-                  }
-                )
+                studentData?.meditatii?.map((meditatie, index) => {
+                  return (
+                    <>
+                      <Accordion.Title
+                        active={activeIndex === index}
+                        index={0}
+                        onClick={() => {
+                          handleAccordion(index);
+                        }}
+                      >
+                        <Icon name="dropdown" />
+                        {new Date(
+                          meditatie.Start.seconds * 1000.0
+                        ).toLocaleTimeString("en-US", {
+                          // en-US can be set to 'default' to use user's browser settings
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }) +
+                          " " +
+                          getPrescurtare(meditatie.materie) +
+                          "-" +
+                          meditatie.profesor +
+                          " (" +
+                          meditatie.grupa.map((elev) => elev + ", ") +
+                          ")"}
+                      </Accordion.Title>
+                      <Accordion.Content active={activeIndex === index}>
+                        <ul>
+                          <li>Profesor: {meditatie.profesor}</li>
+                          <li>Pret: {meditatie.pretPerSedinta}</li>
+                          <li>
+                            Grupa: {meditatie.grupa.map((elev) => elev + ", ")}
+                          </li>
+                          <li>
+                            Efectuat din abonament: 2/4 (16.08.2022, 18.08.2022,
+                            18.08.2022)
+                          </li>
+                        </ul>
+                      </Accordion.Content>
+                    </>
+                  );
+                })
               }
             </Accordion>
           </div>

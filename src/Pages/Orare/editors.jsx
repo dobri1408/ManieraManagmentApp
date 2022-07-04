@@ -13,7 +13,6 @@ export const EfectuataEditor = (props) => {
   const [efectuata, setEfectuata] = useState(false);
   const dispatch = useDispatch();
   const getBackgroundColor = (whichButton) => {
-    console.log(efectuata, whichButton);
     if (efectuata === whichButton)
       return { backgroundColor: "#21ba45", color: "white" };
     else return {};
@@ -202,7 +201,6 @@ export const RepetitieEditor = (props) => {
     }
   };
   const getBackgroundColor = (whichButton) => {
-    console.log(unitate, whichButton);
     if (unitate === whichButton)
       return { backgroundColor: "#21ba45", color: "white" };
     else return {};
@@ -211,8 +209,7 @@ export const RepetitieEditor = (props) => {
   React.useEffect(() => {
     if (props.value) {
       setPeriodica(true);
-      console.log("intru");
-      console.log(props.value);
+
       if (props.value.includes("WEEKLY")) setUnitate("Saptamana");
       else setUnitate("Zi");
       let matches = props.value.match(/(\d+)/);

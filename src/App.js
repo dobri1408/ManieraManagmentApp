@@ -19,6 +19,8 @@ import {
   getMaterii,
   getMeditatii,
 } from "./redux/actions";
+//EFICIENTA TO DO: cand actualizam un element din elevi, profesori idk, sa nu mai dam dispatch la toti elevii din firebase
+//sa actualizam in redux local
 const saliResource = {
   name: "Sali",
   data: [

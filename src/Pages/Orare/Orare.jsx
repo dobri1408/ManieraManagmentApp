@@ -26,6 +26,7 @@ import caGregorian from "cldr-dates-full/main/es/ca-gregorian.json";
 import timeZoneNames from "cldr-dates-full/main/es/timeZoneNames.json";
 import { MultiSelect } from "@progress/kendo-react-dropdowns";
 import { db } from "../../firebase/firebase";
+import { getElevi } from "../../redux/actions";
 import {
   doc,
   setDoc,
@@ -36,7 +37,7 @@ import {
 import "@progress/kendo-date-math/tz/Europe/Bucharest";
 import { getRandomColor } from "../../utils/utils";
 import esMessages from "./es.json";
-
+import { useSelector, useDispatch } from "react-redux";
 import { sampleDataWithCustomSchema } from "./events-utc.js";
 load(
   likelySubtags,
@@ -90,6 +91,9 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   const [date, setDate] = React.useState(new Date());
   const [orarPrincipal, setOrarPrincipal] = React.useState(0);
   const [numberOfCells, setNumberOfCells] = React.useState(1);
+  const eleviFromRedux = useSelector((state) => state.elevi);
+  const profesoriFromRedux = useSelector((state) => state.profesori);
+  const dispatch = useDispatch();
   const divs = React.useRef(
     document.getElementsByClassName("k-scheduler-body")
   );
@@ -131,6 +135,59 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
     await setDoc(doc(db, "meditatii", id), {
       ...meditatie,
     });
+
+    const profesorDeLaMedite = profesoriFromRedux.find(
+      (prof) => prof.id === meditatie.PersonIDs
+    )?.text;
+    const grupaDeElevi = meditatie.ElevID.map(
+      (elevID) => eleviFromRedux.find((elev) => elev.id === elevID).text
+    );
+    meditatie.ElevID.forEach(async (elevId) => {
+      const elev = eleviFromRedux.find((elev) => elev.id === elevId);
+      let meditatiiOfElev = [];
+      if (elev.meditatii.length > 0) meditatiiOfElev = [...elev.meditatii];
+      if (
+        meditatiiOfElev.find(
+          (meditatieOfElev) => meditatieOfElev.TaskID === meditatie.TaskID
+        ) === undefined
+      )
+        await setDoc(doc(db, "elevi", elev.id), {
+          ...elev,
+          meditatii: [
+            ...meditatiiOfElev,
+            {
+              TaskID: meditatie.TaskID,
+              grupa: grupaDeElevi,
+              profesor: profesorDeLaMedite,
+              pretPerSedinta: meditatie.Pret,
+              materie: meditatie.MateriiIDs,
+              Start: meditatie.Start,
+              END: meditatie.End,
+            },
+          ],
+        });
+      else {
+        const elment = meditatiiOfElev.find(
+          (medi) => medi.TaskID === meditatie.TaskID
+        );
+        const index = meditatiiOfElev.indexOf(elment);
+
+        meditatiiOfElev[index] = {
+          TaskID: meditatie.TaskID,
+          grupa: grupaDeElevi,
+          profesor: profesorDeLaMedite,
+          pretPerSedinta: meditatie.Pret,
+          materie: meditatie.MateriiIDs,
+          Start: meditatie.Start,
+          END: meditatie.End,
+        };
+        await setDoc(doc(db, "elevi", elev.id), {
+          ...elev,
+          meditatii: [...meditatiiOfElev],
+        });
+      }
+    });
+    dispatch(getElevi());
   }
   React.useLayoutEffect(() => {
     if (date === undefined || view === undefined) return;
@@ -593,7 +650,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
       </div>
       <Scheduler
         timezone="Europe/Bucharest"
-        height={"80vh"}
+        height={"81vh"}
         data={updatedData}
         style={getTheStyleForSchelunder(numberOfCells)}
         onDataChange={handleDataChange}

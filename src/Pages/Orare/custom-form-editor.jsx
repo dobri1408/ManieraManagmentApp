@@ -18,7 +18,6 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RadioGroup } from "@progress/kendo-react-inputs";
 export const CustomFormEditor = (props) => {
-  console.log(props.valueGetter("Start"), props.valueGetter("End"));
   const eleviFromRedux = useSelector((state) => state.elevi);
   const [elevi, setElevi] = useState([]);
   const [selectedValue, setSelectedValue] = useState("neconfirmat");
@@ -36,7 +35,7 @@ export const CustomFormEditor = (props) => {
     if (props === undefined) return;
     let date = new Date(props.valueGetter("Start"));
     date.setHours(date.getHours() + 2);
-    console.log(date);
+
     props.onChange("End", {
       value: date,
     });

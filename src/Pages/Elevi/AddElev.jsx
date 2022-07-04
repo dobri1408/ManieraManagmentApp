@@ -165,108 +165,108 @@ function AddElev({
           <Divider />
 
           <Divider />
-
-          <Form.Field inline>
-            <Label pointing="right">Materii</Label>
-            <Dropdown
-              placeholder="Materii"
-              fluid
-              multiple
-              selection
-              value={materii}
-              options={Materii.map((materie) => {
-                return {
-                  text: materie.numeMaterie,
-                  value: materie.numeMaterie,
-                  key: materie.numeMaterie,
-                };
-              })}
-              onChange={(e, data) => {
-                setMaterii(data.value);
-              }}
-            />
-          </Form.Field>
-          <Divider />
-          <Form.Field inline>
-            <Label pointing="right">Detalii Pregatiri</Label>
-          </Form.Field>
-          <Form.Field>
-            {materii.map((materie) => {
-              return (
-                <>
-                  <h1>{materie}</h1>
-                  <Form.Field
-                    inline
-                    style={{
-                      display: "block",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Label>Profesor</Label>
-                    <Select
-                      placeholder="Profesor"
-                      fluid
-                      selection
-                      value={meditatii.get(materie)?.profesor}
-                      onChange={(e, data) =>
-                        meditatii.set(materie, { profesor: data.value })
-                      }
-                      options={Materii?.find(
-                        (el) => el?.numeMaterie === materie
-                      )?.profesori?.map((profesor) => {
-                        return {
-                          text:
-                            profesori?.find((el) => el?.id === profesor)
-                              ?.numeDeFamilie +
-                            " " +
-                            profesori?.find((el) => el?.id === profesor)
-                              ?.prenume,
-                          value:
-                            profesori?.find((el) => el?.id === profesor)
-                              ?.numeDeFamilie +
-                            " " +
-                            profesori?.find((el) => el?.id === profesor)
-                              ?.prenume,
-                          key:
-                            profesori?.find((el) => el?.id === profesor)
-                              ?.numeDeFamilie +
-                            " " +
-                            profesori?.find((el) => el?.id === profesor)
-                              ?.prenume,
-                        };
-                      })}
-                    />
-
-                    <Label>Tip Plata</Label>
-                    <Select
-                      placeholder="Tip Plata"
-                      fluid
-                      value={meditatii.get(materie)?.plata}
-                      onChange={(e, data) => {
-                        meditatii.set(materie, {
-                          ...meditatii.get(materie),
-                          plata: data.value,
-                        });
-                      }}
-                      options={[
-                        {
-                          key: "abonament",
-                          text: "Abonament 4",
-                          value: "abonament",
-                        },
-                        {
-                          key: "persedinta",
-                          text: "Plata per sedinta",
-                          value: "Plata per sedinta",
-                        },
-                      ]}
-                    />
-                  </Form.Field>
-                </>
-              );
-            })}
-          </Form.Field>
+          {
+            // <Form.Field inline>
+            //   <Label pointing="right">Materii</Label>
+            //   <Dropdown
+            //     placeholder="Materii"
+            //     fluid
+            //     multiple
+            //     selection
+            //     value={materii}
+            //     options={Materii.map((materie) => {
+            //       return {
+            //         text: materie.numeMaterie,
+            //         value: materie.numeMaterie,
+            //         key: materie.numeMaterie,
+            //       };
+            //     })}
+            //     onChange={(e, data) => {
+            //       setMaterii(data.value);
+            //     }}
+            //   />
+            // </Form.Field>
+            // <Divider />
+            // <Form.Field inline>
+            //   <Label pointing="right">Detalii Pregatiri</Label>
+            // </Form.Field>
+            // <Form.Field>
+            //   {materii.map((materie) => {
+            //     return (
+            //       <Form.Field>
+            //         <h1>{materie}</h1>
+            //         <Form.Field
+            //           inline
+            //           style={{
+            //             display: "block",
+            //             justifyContent: "center",
+            //             alignItems: "center",
+            //           }}
+            //         >
+            //           <Label>Profesor</Label>
+            //           <Select
+            //             placeholder="Profesor"
+            //             fluid
+            //             selection
+            //             value={meditatii.get(materie)?.profesor}
+            //             onChange={(e, data) =>
+            //               meditatii.set(materie, { profesor: data.value })
+            //             }
+            //             options={Materii?.find(
+            //               (el) => el?.numeMaterie === materie
+            //             )?.profesori?.map((profesor) => {
+            //               return {
+            //                 text:
+            //                   profesori?.find((el) => el?.id === profesor)
+            //                     ?.numeDeFamilie +
+            //                   " " +
+            //                   profesori?.find((el) => el?.id === profesor)
+            //                     ?.prenume,
+            //                 value:
+            //                   profesori?.find((el) => el?.id === profesor)
+            //                     ?.numeDeFamilie +
+            //                   " " +
+            //                   profesori?.find((el) => el?.id === profesor)
+            //                     ?.prenume,
+            //                 key:
+            //                   profesori?.find((el) => el?.id === profesor)
+            //                     ?.numeDeFamilie +
+            //                   " " +
+            //                   profesori?.find((el) => el?.id === profesor)
+            //                     ?.prenume,
+            //               };
+            //             })}
+            //           />
+            //           <Label>Tip Plata</Label>
+            //           <Select
+            //             placeholder="Tip Plata"
+            //             fluid
+            //             value={meditatii.get(materie)?.plata}
+            //             onChange={(e, data) => {
+            //               meditatii.set(materie, {
+            //                 ...meditatii.get(materie),
+            //                 plata: data.value,
+            //               });
+            //             }}
+            //             options={[
+            //               {
+            //                 key: "abonament",
+            //                 text: "Abonament 4",
+            //                 value: "abonament",
+            //               },
+            //               {
+            //                 key: "persedinta",
+            //                 text: "Plata per sedinta",
+            //                 value: "Plata per sedinta",
+            //               },
+            //             ]}
+            //           />
+            //         </Form.Field>
+            //       </>
+            //     );
+            //   })}
+            // </Form.Field>
+          }
         </Form>
       </Modal.Content>
       <Modal.Actions>
