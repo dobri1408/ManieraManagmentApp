@@ -11,6 +11,7 @@ import {
   ProfesorEditor,
   RepetitieEditor,
   PretEditor,
+  EfectuataEditor,
 } from "./editors";
 import { RadioButton } from "@progress/kendo-react-inputs";
 import { useEffect, useState } from "react";
@@ -42,6 +43,12 @@ export const CustomFormEditor = (props) => {
   }, [props.valueGetter("Start")]);
   return (
     <FormElement horizontal={true}>
+      <div className="k-form-field">
+        <Label>Sala</Label>
+        <div className="k-form-field-wrap">
+          <Field name={"Efectuata"} component={EfectuataEditor} />
+        </div>
+      </div>
       <div className="k-form-field">
         <Label>Sala</Label>
         <div className="k-form-field-wrap">

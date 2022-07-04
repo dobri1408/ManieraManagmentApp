@@ -6,10 +6,57 @@ import { MultiSelect } from "@progress/kendo-react-dropdowns";
 import { useDispatch } from "react-redux";
 import { testSlice } from "../../redux/store";
 import { Checkbox } from "@progress/kendo-react-inputs";
-import { Button } from "@progress/kendo-react-buttons";
+import { Button } from "semantic-ui-react";
 const { actions } = testSlice;
 const { SELECTED_MATERIE } = actions;
-
+export const EfectuataEditor = (props) => {
+  const [efectuata, setEfectuata] = useState(false);
+  const dispatch = useDispatch();
+  const getBackgroundColor = (whichButton) => {
+    console.log(efectuata, whichButton);
+    if (efectuata === whichButton)
+      return { backgroundColor: "#21ba45", color: "white" };
+    else return {};
+  };
+  React.useEffect(() => {
+    if (props.value === undefined) {
+      setEfectuata(false);
+      handleChange(false);
+    } else setEfectuata(props.value);
+  }, [props.value]);
+  const handleChange = (event) => {
+    if (props.onChange) {
+      props.onChange.call(undefined, {
+        value: event,
+      });
+    }
+  };
+  return (
+    <>
+      <Button
+        style={getBackgroundColor(false)}
+        onClick={(e) => {
+          setEfectuata(false);
+          handleChange(false);
+          e.preventDefault();
+        }}
+      >
+        {" "}
+        Nu Este Efectuata
+      </Button>
+      <Button
+        style={getBackgroundColor(true)}
+        onClick={(e) => {
+          setEfectuata(true);
+          handleChange(true);
+          e.preventDefault();
+        }}
+      >
+        Efectuata
+      </Button>
+    </>
+  );
+};
 export const SalaEditor = (props) => {
   const sali = useSelector((state) => state.sali);
   const dispatch = useDispatch();
@@ -157,7 +204,7 @@ export const RepetitieEditor = (props) => {
   const getBackgroundColor = (whichButton) => {
     console.log(unitate, whichButton);
     if (unitate === whichButton)
-      return { backgroundColor: "#1174ab", color: "white" };
+      return { backgroundColor: "#21ba45", color: "white" };
     else return {};
   };
 
@@ -188,7 +235,7 @@ export const RepetitieEditor = (props) => {
         });
       }
     }
-  }, [periodica, unitate]);
+  }, [periodica, unitate, repetitionValue]);
   return (
     <>
       <Checkbox
@@ -203,22 +250,25 @@ export const RepetitieEditor = (props) => {
           <div className="k-form-field-wrap">
             <Button
               style={getBackgroundColor("Zi")}
-              onClick={() => {
+              onClick={(e) => {
                 setUnitate("Zi");
+                e.preventDefault();
               }}
             >
               Zi
             </Button>
             <Button
               style={getBackgroundColor("Saptamana")}
-              onClick={() => {
+              onClick={(e) => {
                 setUnitate("Saptamana");
+                e.preventDefault();
               }}
             >
               Saptamana
             </Button>
           </div>
           <div className="k-form-field-wrap">
+            <br />
             Se va repeta la{" "}
             <input
               type="number"

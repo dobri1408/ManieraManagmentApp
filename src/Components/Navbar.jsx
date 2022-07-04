@@ -46,9 +46,7 @@ const NavBarMobile = (props) => {
         style={{ minHeight: "100vh" }}
       >
         <Menu fixed="top" inverted>
-          <Menu.Item>
-            <Image size="mini" src="https://react.semantic-ui.com/logo.png" />
-          </Menu.Item>
+          <Menu.Item>Maniera</Menu.Item>
           <Menu.Item onClick={onToggle}>
             <Icon name="sidebar" />
           </Menu.Item>
@@ -75,7 +73,9 @@ const NavBarDesktop = (props) => {
   return (
     <Menu fixed="top" inverted size={"huge"}>
       <Menu.Item>
-        <Image size="mini" src="https://react.semantic-ui.com/logo.png" />
+        <div class="logo-holder logo-3">
+          <p>Maniera</p>
+        </div>
       </Menu.Item>
 
       {leftItems.map((item) => (

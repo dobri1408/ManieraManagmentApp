@@ -26,7 +26,13 @@ import caGregorian from "cldr-dates-full/main/es/ca-gregorian.json";
 import timeZoneNames from "cldr-dates-full/main/es/timeZoneNames.json";
 import { MultiSelect } from "@progress/kendo-react-dropdowns";
 import { db } from "../../firebase/firebase";
-import { doc, setDoc, getDocs, collection } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  getDocs,
+  collection,
+  deleteDoc,
+} from "firebase/firestore";
 import "@progress/kendo-date-math/tz/Europe/Bucharest";
 import { getRandomColor } from "../../utils/utils";
 import esMessages from "./es.json";
@@ -279,10 +285,13 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   const handleOrientationChange = React.useCallback((event) => {
     setOrientation(event.target.getAttribute("data-orientation"));
   }, []);
+  async function removeMeditatieFromDatabase(meditatie) {
+    await deleteDoc(doc(db, "meditatii", meditatie.TaskID));
+  }
   const handleDataChange = React.useCallback(
     ({ created, updated, deleted }) => {
       updated.forEach((meditatie) => addMeditatieToDatabase(meditatie));
-
+      deleted.forEach((meditatie) => removeMeditatieFromDatabase(meditatie));
       setData((old) =>
         old
           .filter(
@@ -532,6 +541,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
           justifyContent: "center",
           alignItems: "center",
           paddingLeft: "2vw",
+          width: "100vw",
         }}
       >
         <div className="row">
@@ -541,6 +551,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
               data={sali}
               value={selectedSali}
               onChange={handleSelectedSali}
+              style={{ width: "40vw" }}
             />
           </div>
           <div className="col">
@@ -570,6 +581,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
 
           <div className="col">
             <Button
+              style={{ backgroundColor: "#21ba45" }}
               onClick={() => {
                 setOrarPrincipal(orarPrincipal + 1);
               }}
@@ -581,7 +593,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
       </div>
       <Scheduler
         timezone="Europe/Bucharest"
-        height={"90vh"}
+        height={"80vh"}
         data={updatedData}
         style={getTheStyleForSchelunder(numberOfCells)}
         onDataChange={handleDataChange}
