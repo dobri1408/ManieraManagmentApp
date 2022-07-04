@@ -145,12 +145,27 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
     meditatie.ElevID.forEach(async (elevId) => {
       const elev = eleviFromRedux.find((elev) => elev.id === elevId);
       let meditatiiOfElev = [];
-      if (elev.meditatii.length > 0) meditatiiOfElev = [...elev.meditatii];
+      if (elev?.meditatii?.length > 0) meditatiiOfElev = [...elev.meditatii];
+      let frecventa;
+      if (
+        meditatie.RecurrenceRule === undefined ||
+        meditatie.RecurrenceRule === null ||
+        meditatie.RecurrenceRule === ""
+      )
+        frecventa = "Nu este periodica";
+      else {
+        let matches = meditatie.RecurrenceRule.match(/(\d+)/);
+        if (matches) frecventa = `Periodica la ${matches[0]}`;
+        if (meditatie.RecurrenceRule.includes("WEEKLY"))
+          frecventa += " saptamani";
+        else if (meditatie.RecurrenceRule.includes("WEEKLY"))
+          frecventa += " zile";
+      }
       if (
         meditatiiOfElev.find(
           (meditatieOfElev) => meditatieOfElev.TaskID === meditatie.TaskID
         ) === undefined
-      )
+      ) {
         await setDoc(doc(db, "elevi", elev.id), {
           ...elev,
           meditatii: [
@@ -163,10 +178,12 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
               materie: meditatie.MateriiIDs,
               Start: meditatie.Start,
               END: meditatie.End,
+              seMaiTine: true,
+              frecventa: frecventa,
             },
           ],
         });
-      else {
+      } else {
         const elment = meditatiiOfElev.find(
           (medi) => medi.TaskID === meditatie.TaskID
         );
@@ -180,6 +197,8 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
           materie: meditatie.MateriiIDs,
           Start: meditatie.Start,
           END: meditatie.End,
+          seMaiTine: true,
+          frecventa: frecventa,
         };
         await setDoc(doc(db, "elevi", elev.id), {
           ...elev,
@@ -344,6 +363,60 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   }, []);
   async function removeMeditatieFromDatabase(meditatie) {
     await deleteDoc(doc(db, "meditatii", meditatie.TaskID));
+    const profesorDeLaMedite = profesoriFromRedux.find(
+      (prof) => prof.id === meditatie.PersonIDs
+    )?.text;
+    const grupaDeElevi = meditatie.ElevID.map(
+      (elevID) => eleviFromRedux.find((elev) => elev.id === elevID).text
+    );
+    meditatie.ElevID.forEach(async (elevId) => {
+      const elev = eleviFromRedux.find((elev) => elev.id === elevId);
+      let meditatiiOfElev = [];
+      if (elev?.meditatii?.length > 0) meditatiiOfElev = [...elev.meditatii];
+      if (
+        meditatiiOfElev.find(
+          (meditatieOfElev) => meditatieOfElev.TaskID === meditatie.TaskID
+        ) === undefined
+      )
+        await setDoc(doc(db, "elevi", elev.id), {
+          ...elev,
+          meditatii: [
+            ...meditatiiOfElev,
+            {
+              TaskID: meditatie.TaskID,
+              grupa: grupaDeElevi,
+              profesor: profesorDeLaMedite,
+              pretPerSedinta: meditatie.Pret,
+              materie: meditatie.MateriiIDs,
+              Start: meditatie.Start,
+              END: meditatie.End,
+              seMaiTine: false,
+            },
+          ],
+        });
+      else {
+        const elment = meditatiiOfElev.find(
+          (medi) => medi.TaskID === meditatie.TaskID
+        );
+        const index = meditatiiOfElev.indexOf(elment);
+
+        meditatiiOfElev[index] = {
+          TaskID: meditatie.TaskID,
+          grupa: grupaDeElevi,
+          profesor: profesorDeLaMedite,
+          pretPerSedinta: meditatie.Pret,
+          materie: meditatie.MateriiIDs,
+          Start: meditatie.Start,
+          END: meditatie.End,
+          seMaiTine: false,
+        };
+        await setDoc(doc(db, "elevi", elev.id), {
+          ...elev,
+          meditatii: [...meditatiiOfElev],
+        });
+      }
+    });
+    dispatch(getElevi());
   }
   const handleDataChange = React.useCallback(
     ({ created, updated, deleted }) => {
@@ -652,6 +725,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
         timezone="Europe/Bucharest"
         height={"81vh"}
         data={updatedData}
+        locale="ro RO"
         style={getTheStyleForSchelunder(numberOfCells)}
         onDataChange={handleDataChange}
         onDateChange={handleDateChange}

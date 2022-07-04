@@ -43,7 +43,7 @@ export const CustomFormEditor = (props) => {
   return (
     <FormElement horizontal={true}>
       <div className="k-form-field">
-        <Label>Sala</Label>
+        <Label>Stare</Label>
         <div className="k-form-field-wrap">
           <Field name={"Efectuata"} component={EfectuataEditor} />
         </div>

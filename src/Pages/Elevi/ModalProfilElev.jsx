@@ -17,7 +17,7 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
   const [activeIndex, setActiveIndex] = useState();
   const [Materii, setMaterii] = useState([]);
   const [open, setOpen] = useState(false);
-
+  const [meditatiiOfElev, setMeditatiiOfElev] = useState([]);
   const handleAccordion = (value) => {
     if (activeIndex === value) {
       setActiveIndex(null);
@@ -25,7 +25,23 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
     }
     setActiveIndex(value);
   };
-
+  function compare(a, b) {
+    if (a.seMaiTine < b.seMaiTine) {
+      return 1;
+    }
+    if (a.seMaiTine > b.seMaiTine) {
+      return -1;
+    }
+    return 0;
+  }
+  React.useEffect(() => {
+    setMeditatiiOfElev([]);
+    if (studentData?.meditatii?.length > 0) {
+      let array = [...studentData.meditatii];
+      array.sort(compare);
+      setMeditatiiOfElev(array);
+    }
+  }, [studentData]);
   return (
     <Modal
       onClose={() => setShow(false)}
@@ -70,12 +86,12 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
               <li>Clasa: {studentData?.clasa}</li>
             </ul>
           </div>
-          <h6>Pregatiri in cadru Maniera</h6>
+          <h6>Pregatiri in cadrul Maniera</h6>
           <div>
             <Accordion styled>
               {
                 //e obiect
-                studentData?.meditatii?.map((meditatie, index) => {
+                meditatiiOfElev.map((meditatie, index) => {
                   return (
                     <>
                       <Accordion.Title
@@ -88,7 +104,7 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
                         <Icon name="dropdown" />
                         {new Date(
                           meditatie.Start.seconds * 1000.0
-                        ).toLocaleTimeString("en-US", {
+                        ).toLocaleTimeString("ro-RO", {
                           // en-US can be set to 'default' to use user's browser settings
                           hour: "2-digit",
                           minute: "2-digit",
@@ -102,9 +118,23 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
                           ")"}
                       </Accordion.Title>
                       <Accordion.Content active={activeIndex === index}>
+                        {meditatie.seMaiTine === false && (
+                          <div>
+                            <h3 style={{ color: "red" }}>
+                              ATENTIE! PREGATIREA A FOST STEARSA.
+                            </h3>
+                            <h3 style={{ color: "red" }}>
+                              PREGATIREA A FOST ARHIVATA
+                            </h3>
+                          </div>
+                        )}
+
                         <ul>
+                          <li>{meditatie.frecventa}</li>
                           <li>Profesor: {meditatie.profesor}</li>
                           <li>Pret: {meditatie.pretPerSedinta}</li>
+                          <li>Materie: {meditatie.materie}</li>
+
                           <li>
                             Grupa: {meditatie.grupa.map((elev) => elev + ", ")}
                           </li>
