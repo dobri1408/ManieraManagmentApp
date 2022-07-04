@@ -2,6 +2,7 @@ import * as React from "react";
 import { SchedulerForm } from "@progress/kendo-react-scheduler";
 import { CustomFormEditor } from "./custom-form-editor";
 import { CustomDialog } from "./custom-dialog";
+
 export const FormWithCustomEditor = (props) => {
   const requiredValidator = React.useCallback(
     (value) =>
@@ -34,6 +35,9 @@ export const FormWithCustomEditor = (props) => {
       editor={CustomFormEditor}
       dialog={CustomDialog}
       validator={formValidator}
+      onCancel={(e, l) => {
+        return false;
+      }}
     />
   );
 };

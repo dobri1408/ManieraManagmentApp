@@ -3,9 +3,15 @@ import { DropDownList } from "@progress/kendo-react-dropdowns";
 import { useSelector } from "react-redux";
 import { useState } from "react";
 import { MultiSelect } from "@progress/kendo-react-dropdowns";
+import { useDispatch } from "react-redux";
+import { testSlice } from "../../redux/store";
+const { actions } = testSlice;
+const { SELECTED_MATERIE } = actions;
 
 export const SalaEditor = (props) => {
   const sali = useSelector((state) => state.sali);
+  const dispatch = useDispatch();
+
   const handleChange = (event) => {
     if (props.onChange) {
       props.onChange.call(undefined, {
@@ -57,12 +63,15 @@ export const EleviEditor = (props) => {
   );
 };
 export const MaterieEditor = (props) => {
+  const dispatch = useDispatch();
+  if (props.value === undefined) dispatch(SELECTED_MATERIE(""));
   const materii = useSelector((state) => state.materii);
   const handleChange = (event) => {
     if (props.onChange) {
       props.onChange.call(undefined, {
         value: event.value.id,
       });
+      dispatch(SELECTED_MATERIE(event.value.id));
     }
   };
 
@@ -77,7 +86,22 @@ export const MaterieEditor = (props) => {
   );
 };
 export const ProfesorEditor = (props) => {
-  const profesori = useSelector((state) => state.profesori);
+  const materie = useSelector((state) => state.selectedMaterie);
+  const dispatch = useDispatch();
+  console.log({ materie });
+  const profesori = useSelector((state) => {
+    if (materie.length > 0)
+      return state.profesori.filter((profesor) => {
+        if (
+          profesor.materii.find(
+            (materieOfProfesor) => materieOfProfesor === materie
+          ) !== undefined
+        )
+          return 1;
+        else return 0;
+      });
+    else return state.profesori;
+  });
   const handleChange = (event) => {
     if (props.onChange) {
       props.onChange.call(undefined, {

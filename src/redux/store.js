@@ -7,6 +7,7 @@ const initialState = {
   materii: [],
   meditatii: [],
   profesori: [],
+  selectedMaterie: "",
   sali: [
     {
       text: "Sala 1",
@@ -70,6 +71,14 @@ export const testSlice = createSlice({
       ...state,
       profesori: action.payload,
     }),
+    SELECTED_MATERIE: (state, action) => {
+      console.log("intru pe aici");
+      console.log(action);
+      return {
+        ...state,
+        selectedMaterie: action.payload,
+      };
+    },
   },
   extraReducers: {
     [getProfesori.fulfilled]: (state, { payload }) => {
