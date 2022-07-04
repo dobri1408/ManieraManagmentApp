@@ -105,6 +105,23 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   }, [sali, orarPrincipal]);
   async function addMeditatieToDatabase(meditatie) {
     const id = meditatie.TaskID;
+    if (
+      meditatie.hasOwnProperty("originalStart") &&
+      meditatie.originalStart === undefined
+    )
+      delete meditatie.originalStart;
+    if (
+      meditatie.hasOwnProperty("RecurrenceID") &&
+      meditatie.RecurrenceID === undefined
+    )
+      delete meditatie.RecurrenceID;
+
+    if (
+      meditatie.hasOwnProperty("RecurrenceException") &&
+      meditatie.RecurrenceException === undefined
+    )
+      delete meditatie.RecurrenceException;
+
     await setDoc(doc(db, "meditatii", id), {
       ...meditatie,
     });

@@ -35,9 +35,6 @@ export const FormWithCustomEditor = (props) => {
       editor={CustomFormEditor}
       dialog={CustomDialog}
       validator={formValidator}
-      onCancel={(e, l) => {
-        return false;
-      }}
     />
   );
 };

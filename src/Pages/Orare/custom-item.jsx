@@ -23,9 +23,11 @@ const generateTitle = (dataItem, profesori, elevi) => {
     " " +
     getPrescurtare(dataItem.MateriiIDs) +
     "-" +
-    profesori?.find((profesor) => profesor.id === dataItem.PersonIDs).prenume +
+    profesori?.find((profesor) => profesor.id === dataItem.PersonIDs)?.prenume +
     " (" +
-    dataItem.ElevID.map((ID) => elevi?.find((elev) => elev.id === ID).prenume) +
+    dataItem.ElevID.map(
+      (ID) => elevi?.find((elev) => elev.id === ID)?.prenume
+    ) +
     ")"
   );
 };

@@ -5,6 +5,8 @@ import { useState } from "react";
 import { MultiSelect } from "@progress/kendo-react-dropdowns";
 import { useDispatch } from "react-redux";
 import { testSlice } from "../../redux/store";
+import { Checkbox } from "@progress/kendo-react-inputs";
+import { Button } from "@progress/kendo-react-buttons";
 const { actions } = testSlice;
 const { SELECTED_MATERIE } = actions;
 
@@ -118,5 +120,97 @@ export const ProfesorEditor = (props) => {
       dataItemKey={"id"}
       textField={"text"}
     />
+  );
+};
+export const RepetitieEditor = (props) => {
+  const [periodica, setPeriodica] = useState(false);
+  const [unitate, setUnitate] = useState("Saptamana");
+  const [repetitionValue, setRepetitionValue] = useState(1);
+  const handleChange = (event) => {
+    if (props.onChange) {
+      props.onChange.call(undefined, {
+        value: event.value.id,
+      });
+    }
+  };
+  const getBackgroundColor = (whichButton) => {
+    console.log(unitate, whichButton);
+    if (unitate === whichButton)
+      return { backgroundColor: "#1174ab", color: "white" };
+    else return {};
+  };
+
+  React.useEffect(() => {
+    if (props.value) {
+      setPeriodica(true);
+      console.log("intru");
+      console.log(props.value);
+      if (props.value.includes("WEEKLY")) setUnitate("Saptamana");
+      else setUnitate("Zi");
+      let matches = props.value.match(/(\d+)/);
+      if (matches) setRepetitionValue(matches[0]);
+    }
+  }, []);
+  React.useEffect(() => {
+    if (periodica === false) {
+      props.onChange.call(undefined, {
+        value: null,
+      });
+    } else {
+      if (unitate === "Saptamana")
+        props.onChange.call(undefined, {
+          value: `FREQ=WEEKLY;INTERVAL=${repetitionValue}`,
+        });
+      else {
+        props.onChange.call(undefined, {
+          value: `FREQ=DAILY;INTERVAL=${repetitionValue}`,
+        });
+      }
+    }
+  }, [periodica, unitate]);
+  return (
+    <>
+      <Checkbox
+        value={periodica}
+        label={"Este Periodica"}
+        onChange={(e) => {
+          setPeriodica(e.value);
+        }}
+      />
+      {periodica && (
+        <>
+          <div className="k-form-field-wrap">
+            <Button
+              style={getBackgroundColor("Zi")}
+              onClick={() => {
+                setUnitate("Zi");
+              }}
+            >
+              Zi
+            </Button>
+            <Button
+              style={getBackgroundColor("Saptamana")}
+              onClick={() => {
+                setUnitate("Saptamana");
+              }}
+            >
+              Saptamana
+            </Button>
+          </div>
+          <div className="k-form-field-wrap">
+            Se va repeta la{" "}
+            <input
+              type="number"
+              style={{ width: "5vw" }}
+              value={repetitionValue}
+              onChange={(e) => {
+                setRepetitionValue(e.target.value);
+              }}
+            />
+            {unitate === "Saptamana" ? " saptamani" : " zile"}
+          </div>
+        </>
+      )}
+    </>
   );
 };

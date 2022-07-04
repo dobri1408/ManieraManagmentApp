@@ -9,13 +9,14 @@ import {
   EleviEditor,
   MaterieEditor,
   ProfesorEditor,
+  RepetitieEditor,
 } from "./editors";
 import { RadioButton } from "@progress/kendo-react-inputs";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RadioGroup } from "@progress/kendo-react-inputs";
 export const CustomFormEditor = (props) => {
-  console.log(props);
+  console.log(props.valueGetter("Start"), props.valueGetter("End"));
   const eleviFromRedux = useSelector((state) => state.elevi);
   const [elevi, setElevi] = useState([]);
   const [selectedValue, setSelectedValue] = useState("neconfirmat");
@@ -132,6 +133,12 @@ export const CustomFormEditor = (props) => {
             rows={5}
             format={"dd-MMM-yyyy HH:mm"}
           />
+        </div>
+      </div>
+      <div className="k-form-field">
+        <Label>Repetitie</Label>
+        <div className="k-form-field-wrap">
+          <Field name={"RecurrenceRule"} component={RepetitieEditor} />
         </div>
       </div>
     </FormElement>
