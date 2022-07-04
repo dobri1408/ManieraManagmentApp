@@ -3,7 +3,7 @@ import { FormElement, Field } from "@progress/kendo-react-form";
 import { Label, Error } from "@progress/kendo-react-labels";
 import { TextArea } from "@progress/kendo-react-inputs";
 import { DatePicker, DateTimePicker } from "@progress/kendo-react-dateinputs";
-import { DropDownList } from "@progress/kendo-react-dropdowns";
+import { Button } from "@progress/kendo-react-buttons";
 import {
   SalaEditor,
   EleviEditor,
@@ -15,23 +15,29 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RadioGroup } from "@progress/kendo-react-inputs";
 export const CustomFormEditor = (props) => {
-  console.log(props.valueGetter("ElevID"));
+  console.log(props);
   const eleviFromRedux = useSelector((state) => state.elevi);
   const [elevi, setElevi] = useState([]);
   const [selectedValue, setSelectedValue] = useState("neconfirmat");
 
   useEffect(() => {
     let array = props
-      .valueGetter("ElevID")
-      .map((elev) => eleviFromRedux.find((elevRedux) => elevRedux.id === elev));
+      ?.valueGetter("ElevID")
+      ?.map((elev) =>
+        eleviFromRedux.find((elevRedux) => elevRedux.id === elev)
+      );
+    if (array === undefined) array = [];
     setElevi(array);
   }, [props]);
-  const handleChange = React.useCallback(
-    (e) => {
-      setSelectedValue(e.value);
-    },
-    [setSelectedValue]
-  );
+  useEffect(() => {
+    if (props === undefined) return;
+    let date = new Date(props.valueGetter("Start"));
+    date.setHours(date.getHours() + 2);
+    console.log(date);
+    props.onChange("End", {
+      value: date,
+    });
+  }, [props.valueGetter("Start")]);
   return (
     <FormElement horizontal={true}>
       <div className="k-form-field">
@@ -50,7 +56,7 @@ export const CustomFormEditor = (props) => {
             alignItems: "center",
           }}
         >
-          {elevi.map((elev, index) => {
+          {elevi?.map((elev, index) => {
             return (
               <div style={{ display: "block" }}>
                 <div style={{ fontWeight: "bold" }}>

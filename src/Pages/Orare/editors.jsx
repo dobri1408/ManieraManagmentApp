@@ -37,14 +37,14 @@ export const EleviEditor = (props) => {
     const array = props?.value?.map((valueId) =>
       elevi?.find((elev) => elev?.id === valueId)
     );
-    console.log(array);
+
     if (array === undefined) setSelectedElevi([]);
     else setSelectedElevi([...array]);
   }, [props]);
-  console.log(slectedElevi);
+
   const handleChange = (event) => {
     setSelectedElevi(event.value);
-    console.log(event.value);
+
     if (props.onChange) {
       props.onChange.call([], {
         value: event.value.map((elev) => elev.id),
@@ -88,7 +88,7 @@ export const MaterieEditor = (props) => {
 export const ProfesorEditor = (props) => {
   const materie = useSelector((state) => state.selectedMaterie);
   const dispatch = useDispatch();
-  console.log({ materie });
+
   const profesori = useSelector((state) => {
     if (materie.length > 0)
       return state.profesori.filter((profesor) => {

@@ -114,7 +114,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
 
     const rows =
       document.getElementsByClassName("k-scheduler-body")[0].childNodes;
-    console.log({ rows });
+
     if (rows.length === 0 || rows === undefined) return;
     for (let i = 1; i < rows.length; i += 2) {
       if (rows[i].className === "k-scheduler-group k-group-horizontal")

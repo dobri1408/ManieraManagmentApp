@@ -72,8 +72,6 @@ export const testSlice = createSlice({
       profesori: action.payload,
     }),
     SELECTED_MATERIE: (state, action) => {
-      console.log("intru pe aici");
-      console.log(action);
       return {
         ...state,
         selectedMaterie: action.payload,
