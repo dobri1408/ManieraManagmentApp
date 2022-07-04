@@ -31,6 +31,27 @@ export const SalaEditor = (props) => {
     />
   );
 };
+export const PretEditor = (props) => {
+  const [pret, setPret] = useState(0);
+  React.useEffect(() => {
+    if (props.value === undefined && props.onChange) {
+      props.onChange.call(undefined, {
+        value: 0,
+      });
+    }
+    if (props.value) setPret(parseInt(props.value));
+  }, []);
+
+  const handleChange = (event) => {
+    setPret(event.target.value);
+    if (props.onChange) {
+      props.onChange.call(undefined, {
+        value: event.target.value,
+      });
+    }
+  };
+  return <input type="number" value={pret} onChange={handleChange} />;
+};
 export const EleviEditor = (props) => {
   const elevi = useSelector((state) => state.elevi);
 
