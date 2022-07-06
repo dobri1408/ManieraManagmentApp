@@ -13,6 +13,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "./firebase/firebase";
 import { getRandomColor } from "./utils/utils";
 import { useSelector, useDispatch } from "react-redux";
+import About from "./Pages/About";
 import {
   getProfesori,
   getElevi,
@@ -195,6 +196,7 @@ function App() {
           <Route path="/elev/:id" element={<ElevPage />} />
           <Route path="/profesori" element={<Profesori />} />
           <Route path="/profesor/:id" element={<ProfesorPage />} />
+          <Route path="/about" element={<About />} />
         </Routes>
       </Router>
     </>

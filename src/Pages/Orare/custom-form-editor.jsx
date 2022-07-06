@@ -4,6 +4,8 @@ import { Label, Error } from "@progress/kendo-react-labels";
 import { TextArea } from "@progress/kendo-react-inputs";
 import { DatePicker, DateTimePicker } from "@progress/kendo-react-dateinputs";
 import { Button } from "@progress/kendo-react-buttons";
+import { db } from "../../firebase/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import {
   SalaEditor,
   EleviEditor,
@@ -15,12 +17,50 @@ import {
 } from "./editors";
 import { RadioButton } from "@progress/kendo-react-inputs";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { testSlice } from "../../redux/store";
 import { RadioGroup } from "@progress/kendo-react-inputs";
+
+const { actions } = testSlice;
+const { PLATI } = actions;
+////BUGGG DACA SE VA ADAIUGA UN ELEV NOU NU VA MERGE
 export const CustomFormEditor = (props) => {
   const eleviFromRedux = useSelector((state) => state.elevi);
   const [elevi, setElevi] = useState([]);
   const [selectedValue, setSelectedValue] = useState("neconfirmat");
+  const dispatch = useDispatch();
+  const plati = useSelector((state) => state.plati);
+  console.log(props);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  async function getDataOfSedinta(array) {
+    let copyOFPlati = {};
+    let copyOFPlatiFromDataBase = {};
+    console.log("intru in functie");
+    const Start = props?.valueGetter("Start");
+    const id = props?.valueGetter("TaskID");
+    console.log({ array });
+
+    console.log({ id });
+    if (id) {
+      const docRef = doc(db, "sedinte", id + Date.parse(Start));
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        copyOFPlatiFromDataBase = docSnap.data().plati;
+      }
+    }
+    console.log(array);
+    array.forEach((elev) => {
+      if (copyOFPlatiFromDataBase.hasOwnProperty(elev.id))
+        copyOFPlati[elev.id] = copyOFPlatiFromDataBase[elev.id];
+      else
+        copyOFPlati[elev.id] = {
+          starePlata: "neconfirmat",
+          prezenta: "neconfirmat",
+        };
+      console.log(copyOFPlati);
+    });
+    dispatch(PLATI(copyOFPlati));
+  }
 
   useEffect(() => {
     let array = props
@@ -28,9 +68,17 @@ export const CustomFormEditor = (props) => {
       ?.map((elev) =>
         eleviFromRedux.find((elevRedux) => elevRedux.id === elev)
       );
-    if (array === undefined) array = [];
-    setElevi(array);
-  }, [props]);
+    console.log("intru in useEffect");
+    if (array === undefined) {
+      array = [];
+      dispatch(PLATI({}));
+    } else {
+      getDataOfSedinta(array);
+    }
+
+    setElevi([...array]);
+  }, [eleviFromRedux, props?.valueGetter("ElevID")]);
+  console.log({ plati });
   useEffect(() => {
     if (props === undefined) return;
     let date = new Date(props.valueGetter("Start"));
@@ -40,6 +88,7 @@ export const CustomFormEditor = (props) => {
       value: date,
     });
   }, [props.valueGetter("Start")]);
+  console.log({ plati });
   return (
     <FormElement horizontal={true}>
       <div className="k-form-field">
@@ -84,6 +133,16 @@ export const CustomFormEditor = (props) => {
                     { label: "Platit", value: "platit" },
                     { label: "Neplatit", value: "neplatit" },
                   ]}
+                  value={plati[elev.id]?.starePlata}
+                  onChange={(e) => {
+                    console.log("ID", elev.id);
+                    let copyOFPlati = { ...plati };
+                    copyOFPlati[elev.id] = {
+                      starePlata: e.value,
+                      prezenta: plati[elev.id]?.prezenta,
+                    };
+                    dispatch(PLATI(copyOFPlati));
+                  }}
                 />
                 <RadioGroup
                   layout="horizontal"
@@ -92,6 +151,15 @@ export const CustomFormEditor = (props) => {
                     { label: "Prezent", value: "Prezent" },
                     { label: "Absent", value: "Absent" },
                   ]}
+                  value={plati[elev.id]?.prezenta}
+                  onChange={(e) => {
+                    let copyOFPlati = { ...plati };
+                    copyOFPlati[elev.id] = {
+                      starePlata: plati[elev.id]?.starePlata,
+                      prezenta: e.value,
+                    };
+                    dispatch(PLATI(copyOFPlati));
+                  }}
                 />
               </div>
             );
