@@ -40,7 +40,7 @@ function ModalProfilProfesor({ show, setShow, profesorData, setStudentData }) {
         materiiDefault={profesorData?.materii}
       />
       <Modal.Header>Detalii Profesor</Modal.Header>
-      <Modal.Content image>
+      <Modal.Content image scrolling>
         <Modal.Description>
           <Header>
             {profesorData?.prenume + " " + profesorData?.numeDeFamilie}

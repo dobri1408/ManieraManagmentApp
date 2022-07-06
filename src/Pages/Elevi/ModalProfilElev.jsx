@@ -64,7 +64,7 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
         clasaDefault={studentData?.clasa}
       />
       <Modal.Header>Detalii Elev</Modal.Header>
-      <Modal.Content image>
+      <Modal.Content image scrolling>
         <Modal.Description>
           <Header>
             {studentData?.prenume + " " + studentData?.numeDeFamilie}
