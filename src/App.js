@@ -22,6 +22,7 @@ import {
 } from "./redux/actions";
 //EFICIENTA TO DO: cand actualizam un element din elevi, profesori idk, sa nu mai dam dispatch la toti elevii din firebase
 //sa actualizam in redux local
+//BUG DACA MODIFCI PRIMA REPETITIE A UNEI MEDITATII O DUBLIFICA IN URMATOAREA SAPTAMANA, pentru ca si acolo e deja modifica
 const saliResource = {
   name: "Sali",
   data: [

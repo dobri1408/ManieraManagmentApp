@@ -115,7 +115,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
     setSelectedProfesori([]);
   }, [sali, orarPrincipal]);
   async function addMeditatieToDatabase(meditatie, plati) {
-    const id = meditatie.TaskID;
+    let id = meditatie.TaskID;
     if (
       meditatie.hasOwnProperty("originalStart") &&
       meditatie.originalStart === undefined
@@ -144,6 +144,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
       (elevID) => eleviFromRedux.find((elev) => elev.id === elevID)?.text
     );
     console.log("se intra aici", plati);
+
     await setDoc(
       doc(db, "sedinte", id + Date.parse(meditatie.Start)),
       {
@@ -153,6 +154,10 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
       },
       { merge: true }
     );
+    console.log({ meditatie });
+    let actuallyTheGodID = meditatie.TaskID;
+    if (meditatie.RecurrenceID) meditatie.TaskID = meditatie.RecurrenceID;
+    id = meditatie.TaskID;
     meditatie.ElevID.forEach(async (elevId) => {
       const elev = eleviFromRedux.find((elev) => elev.id === elevId);
       let meditatiiOfElev = [];
@@ -172,6 +177,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
         else if (meditatie.RecurrenceRule.includes("WEEKLY"))
           frecventa += " zile";
       }
+
       if (
         meditatiiOfElev.find(
           (meditatieOfElev) => meditatieOfElev.TaskID === meditatie.TaskID
@@ -184,7 +190,10 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
           sedinte.push({
             Start: meditatie.Start,
             TaskID: id + Date.parse(meditatie.Start),
-            plati: plati,
+            prezenta: plati[elev.id].prezenta,
+            starePlata: plati[elev.id].starePlata,
+            Pret: meditatie.Pret,
+            sedintaID: actuallyTheGodID,
           });
         }
         console.log("ajung aici");
@@ -211,12 +220,16 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
         const elment = meditatiiOfElev.find(
           (medi) => medi.TaskID === meditatie.TaskID
         );
+
         const index = meditatiiOfElev.indexOf(elment);
         //search for the sedintat
         const sedintaObject = {
           Start: meditatie.Start,
           TaskID: id + Date.parse(meditatie.Start),
-          plati: plati,
+          prezenta: plati[elev.id].prezenta,
+          starePlata: plati[elev.id].starePlata,
+          Pret: meditatie.Pret,
+          sedintaID: actuallyTheGodID,
         };
         const whereIsSedinta = meditatiiOfElev[index]?.sedinte?.find(
           (sedinta) => sedinta.TaskID === sedintaObject.TaskID
@@ -451,6 +464,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
           Start: meditatie.Start,
           END: meditatie.End,
           seMaiTine: false,
+          sedinte: meditatiiOfElev[index].sedinte,
         };
         await setDoc(doc(db, "elevi", elev.id), {
           ...elev,
@@ -462,7 +476,9 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   }
   const handleDataChange = React.useCallback(
     ({ created, updated, deleted }) => {
-      updated.forEach((meditatie) => addMeditatieToDatabase(meditatie, plati));
+      updated.forEach((meditatie) =>
+        addMeditatieToDatabase({ ...meditatie }, plati)
+      );
       deleted.forEach((meditatie) => removeMeditatieFromDatabase(meditatie));
       setData((old) =>
         old
@@ -479,9 +495,14 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
             created.map((item) => {
               const TASKID = guid();
               addMeditatieToDatabase(
-                Object.assign({}, item, {
-                  TaskID: TASKID,
-                }),
+                Object.assign(
+                  {},
+                  { ...item },
+                  {
+                    TaskID: TASKID,
+                  }
+                ),
+
                 plati
               );
               return Object.assign({}, item, {

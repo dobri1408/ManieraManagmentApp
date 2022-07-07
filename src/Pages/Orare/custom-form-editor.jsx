@@ -25,6 +25,7 @@ const { actions } = testSlice;
 const { PLATI } = actions;
 ////BUGGG DACA SE VA ADAIUGA UN ELEV NOU NU VA MERGE
 export const CustomFormEditor = (props) => {
+  console.log("din editor", props.valueGetter("RecurrenceID"));
   const eleviFromRedux = useSelector((state) => state.elevi);
   const [elevi, setElevi] = useState([]);
   const [selectedValue, setSelectedValue] = useState("neconfirmat");
@@ -42,10 +43,12 @@ export const CustomFormEditor = (props) => {
 
     console.log({ id });
     if (id) {
+      console.log(id + Date.parse(Start));
       const docRef = doc(db, "sedinte", id + Date.parse(Start));
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         copyOFPlatiFromDataBase = docSnap.data().plati;
+        console.log("sunt aici");
       }
     }
     console.log(array);
@@ -119,51 +122,53 @@ export const CustomFormEditor = (props) => {
             alignItems: "center",
           }}
         >
-          {elevi?.map((elev, index) => {
-            return (
-              <div style={{ display: "block" }}>
-                <div style={{ fontWeight: "bold" }}>
-                  {index + 1}. {elev.text}
-                </div>
+          {props.valueGetter("RecurrenceID") &&
+            props.valueGetter("Efectuata") &&
+            elevi?.map((elev, index) => {
+              return (
+                <div style={{ display: "block" }}>
+                  <div style={{ fontWeight: "bold" }}>
+                    {index + 1}. {elev.text}
+                  </div>
 
-                <RadioGroup
-                  layout="horizontal"
-                  data={[
-                    { label: "Neconfirmat", value: "neconfirmat" },
-                    { label: "Platit", value: "platit" },
-                    { label: "Neplatit", value: "neplatit" },
-                  ]}
-                  value={plati[elev.id]?.starePlata}
-                  onChange={(e) => {
-                    console.log("ID", elev.id);
-                    let copyOFPlati = { ...plati };
-                    copyOFPlati[elev.id] = {
-                      starePlata: e.value,
-                      prezenta: plati[elev.id]?.prezenta,
-                    };
-                    dispatch(PLATI(copyOFPlati));
-                  }}
-                />
-                <RadioGroup
-                  layout="horizontal"
-                  data={[
-                    { label: "Neconfirmat", value: "neconfirmat" },
-                    { label: "Prezent", value: "Prezent" },
-                    { label: "Absent", value: "Absent" },
-                  ]}
-                  value={plati[elev.id]?.prezenta}
-                  onChange={(e) => {
-                    let copyOFPlati = { ...plati };
-                    copyOFPlati[elev.id] = {
-                      starePlata: plati[elev.id]?.starePlata,
-                      prezenta: e.value,
-                    };
-                    dispatch(PLATI(copyOFPlati));
-                  }}
-                />
-              </div>
-            );
-          })}
+                  <RadioGroup
+                    layout="horizontal"
+                    data={[
+                      { label: "Neconfirmat", value: "neconfirmat" },
+                      { label: "Platit", value: "platit" },
+                      { label: "Neplatit", value: "neplatit" },
+                    ]}
+                    value={plati[elev.id]?.starePlata}
+                    onChange={(e) => {
+                      console.log("ID", elev.id);
+                      let copyOFPlati = { ...plati };
+                      copyOFPlati[elev.id] = {
+                        starePlata: e.value,
+                        prezenta: plati[elev.id]?.prezenta,
+                      };
+                      dispatch(PLATI(copyOFPlati));
+                    }}
+                  />
+                  <RadioGroup
+                    layout="horizontal"
+                    data={[
+                      { label: "Neconfirmat", value: "neconfirmat" },
+                      { label: "Prezent", value: "Prezent" },
+                      { label: "Absent", value: "Absent" },
+                    ]}
+                    value={plati[elev.id]?.prezenta}
+                    onChange={(e) => {
+                      let copyOFPlati = { ...plati };
+                      copyOFPlati[elev.id] = {
+                        starePlata: plati[elev.id]?.starePlata,
+                        prezenta: e.value,
+                      };
+                      dispatch(PLATI(copyOFPlati));
+                    }}
+                  />
+                </div>
+              );
+            })}
         </div>
       </div>
       <div className="k-form-field">
@@ -200,7 +205,7 @@ export const CustomFormEditor = (props) => {
             component={props.startEditor || DatePicker}
             as={DateTimePicker}
             rows={1}
-            format={"dd-MMM-yyyy HH:mm"}
+            format={"HH:mm"}
           />
         </div>
       </div>
@@ -212,7 +217,7 @@ export const CustomFormEditor = (props) => {
             component={props.endEditor || DatePicker}
             as={DateTimePicker}
             rows={5}
-            format={"dd-MMM-yyyy HH:mm"}
+            format={"HH:mm"}
           />
         </div>
       </div>
