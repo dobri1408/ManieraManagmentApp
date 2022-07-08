@@ -78,6 +78,7 @@ export default function Profesori() {
           onClick={() => {
             setModal(true);
           }}
+          style={{ backgroundColor: "#21ba45", color: "white" }}
         >
           Adauga Profesor
         </Button>

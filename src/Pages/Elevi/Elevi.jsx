@@ -69,6 +69,7 @@ export default function Elevi() {
           onClick={() => {
             setModal(true);
           }}
+          style={{ backgroundColor: "#21ba45", color: "white" }}
         >
           Adauga Elev
         </Button>

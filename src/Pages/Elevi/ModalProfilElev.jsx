@@ -13,6 +13,7 @@ import { getDocs, collection } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 import AddElev from "./AddElev";
 import { getPrescurtare } from "../../utils/utils";
+import { Label, Menu, Table } from "semantic-ui-react";
 function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
   const [activeIndex, setActiveIndex] = useState();
   const [Materii, setMaterii] = useState([]);
@@ -42,6 +43,31 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
       setMeditatiiOfElev(array);
     }
   }, [studentData]);
+  function timeConverter(UNIX_timestamp) {
+    var a = new Date(UNIX_timestamp * 1000);
+    var months = [
+      "Ian",
+      "Feb",
+      "Mar",
+      "Apr",
+      "Mai",
+      "Iun",
+      "Iul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    var year = a.getFullYear();
+    var month = months[a.getMonth()];
+    var date = a.getDate();
+    var hour = a.getHours();
+    var min = a.getMinutes();
+    var sec = a.getSeconds();
+    var time = date + " " + month + " " + year + " " + hour + ":" + min;
+    return time;
+  }
   return (
     <Modal
       onClose={() => setShow(false)}
@@ -64,7 +90,7 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
         clasaDefault={studentData?.clasa}
       />
       <Modal.Header>Detalii Elev</Modal.Header>
-      <Modal.Content image>
+      <Modal.Content image scrolling>
         <Modal.Description>
           <Header>
             {studentData?.prenume + " " + studentData?.numeDeFamilie}
@@ -92,6 +118,17 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
               {
                 //e obiect
                 meditatiiOfElev.map((meditatie, index) => {
+                  const platite = meditatie.sedinte.filter(
+                    (meditatie) => meditatie.starePlata === "platit"
+                  );
+                  const neplatite = meditatie.sedinte.filter(
+                    (meditatie) =>
+                      meditatie.starePlata === "neplatit" &&
+                      meditatie.prezenta === "Prezent"
+                  );
+                  const absente = meditatie.sedinte.filter(
+                    (meditatie) => meditatie.prezenta === "Absent"
+                  );
                   return (
                     <>
                       <Accordion.Title
@@ -138,11 +175,81 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
                           <li>
                             Grupa: {meditatie.grupa.map((elev) => elev + ", ")}
                           </li>
-                          <li>
-                            Efectuat din abonament: 2/4 (16.08.2022, 18.08.2022,
-                            18.08.2022)
-                          </li>
                         </ul>
+                        <h3 style={{ alignText: "center", color: "red" }}>
+                          Sedinte neplatite ({neplatite.length})
+                        </h3>
+                        <Table celled>
+                          <Table.Header>
+                            <Table.Row>
+                              <Table.HeaderCell>Data</Table.HeaderCell>
+                              <Table.HeaderCell>Suma</Table.HeaderCell>
+                            </Table.Row>
+                          </Table.Header>
+
+                          <Table.Body>
+                            {neplatite.map((sedinta) => {
+                              return (
+                                <Table.Row>
+                                  <Table.Cell>
+                                    {timeConverter(sedinta.Start.seconds)}
+                                  </Table.Cell>
+                                  <Table.Cell style={{ color: "red" }}>
+                                    {sedinta.Pret}
+                                  </Table.Cell>
+                                </Table.Row>
+                              );
+                            })}
+                          </Table.Body>
+                        </Table>
+                        <h3 style={{ alignText: "center", color: "grey" }}>
+                          Sedinte Absentate ({absente.length})
+                        </h3>
+                        <Table celled>
+                          <Table.Header>
+                            <Table.Row>
+                              <Table.HeaderCell>Data</Table.HeaderCell>
+                            </Table.Row>
+                          </Table.Header>
+
+                          <Table.Body>
+                            {absente.map((sedinta) => {
+                              return (
+                                <Table.Row>
+                                  <Table.Cell>
+                                    {timeConverter(sedinta.Start.seconds)}
+                                  </Table.Cell>
+                                </Table.Row>
+                              );
+                            })}
+                          </Table.Body>
+                        </Table>
+                        <h3 style={{ alignText: "center", color: "green" }}>
+                          Sedinte Platite ({platite.length})
+                        </h3>
+                        <Table celled>
+                          <Table.Header>
+                            <Table.Row>
+                              <Table.HeaderCell>Data</Table.HeaderCell>
+                              <Table.HeaderCell>Suma</Table.HeaderCell>
+                            </Table.Row>
+                          </Table.Header>
+
+                          <Table.Body>
+                            {platite.map((sedinta) => {
+                              return (
+                                <Table.Row>
+                                  <Table.Cell>
+                                    {timeConverter(sedinta.Start.seconds)}
+                                  </Table.Cell>
+                                  <Table.Cell style={{ color: "green" }}>
+                                    {sedinta.Pret}
+                                  </Table.Cell>
+                                </Table.Row>
+                              );
+                            })}
+                          </Table.Body>
+                        </Table>
                       </Accordion.Content>
                     </>
                   );

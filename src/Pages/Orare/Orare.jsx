@@ -93,8 +93,9 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   const [numberOfCells, setNumberOfCells] = React.useState(1);
   const eleviFromRedux = useSelector((state) => state.elevi);
   const profesoriFromRedux = useSelector((state) => state.profesori);
-  const dispatch = useDispatch();
   const plati = useSelector((state) => state.plati);
+  const dispatch = useDispatch();
+
   const divs = React.useRef(
     document.getElementsByClassName("k-scheduler-body")
   );
@@ -114,8 +115,8 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
     setSelectedElevi([]);
     setSelectedProfesori([]);
   }, [sali, orarPrincipal]);
-  async function addMeditatieToDatabase(meditatie) {
-    const id = meditatie.TaskID;
+  async function addMeditatieToDatabase(meditatie, plati) {
+    let id = meditatie.TaskID;
     if (
       meditatie.hasOwnProperty("originalStart") &&
       meditatie.originalStart === undefined
@@ -141,8 +142,23 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
       (prof) => prof.id === meditatie.PersonIDs
     )?.text;
     const grupaDeElevi = meditatie.ElevID.map(
-      (elevID) => eleviFromRedux.find((elev) => elev.id === elevID).text
+      (elevID) => eleviFromRedux.find((elev) => elev.id === elevID)?.text
     );
+    console.log("se intra aici", plati);
+
+    await setDoc(
+      doc(db, "sedinte", id + Date.parse(meditatie.Start)),
+      {
+        Start: meditatie.Start,
+        TaskID: id + Date.parse(meditatie.Start),
+        plati: plati,
+      },
+      { merge: true }
+    );
+    console.log({ meditatie });
+    let actuallyTheGodID = meditatie.TaskID;
+    if (meditatie.RecurrenceID) meditatie.TaskID = meditatie.RecurrenceID;
+    id = meditatie.TaskID;
     meditatie.ElevID.forEach(async (elevId) => {
       const elev = eleviFromRedux.find((elev) => elev.id === elevId);
       let meditatiiOfElev = [];
@@ -168,8 +184,20 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
           (meditatieOfElev) => meditatieOfElev.TaskID === meditatie.TaskID
         ) === undefined
       ) {
-        const instante = [];
+        //CREARE MEDITATIE NOUA
 
+        const sedinte = [];
+        if (meditatie.Efectuata) {
+          sedinte.push({
+            Start: meditatie.Start,
+            TaskID: id + Date.parse(meditatie.Start),
+            prezenta: plati[elev.id].prezenta,
+            starePlata: plati[elev.id].starePlata,
+            Pret: meditatie.Pret,
+            sedintaID: actuallyTheGodID,
+          });
+        }
+        console.log("ajung aici");
         await setDoc(doc(db, "elevi", elev.id), {
           ...elev,
           meditatii: [
@@ -184,14 +212,40 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
               END: meditatie.End,
               seMaiTine: true,
               frecventa: frecventa,
+              sedinte: sedinte,
             },
           ],
         });
       } else {
+        console.log("ajung aici");
         const elment = meditatiiOfElev.find(
           (medi) => medi.TaskID === meditatie.TaskID
         );
+
         const index = meditatiiOfElev.indexOf(elment);
+        //search for the sedintat
+        const sedintaObject = {
+          Start: meditatie.Start,
+          TaskID: id + Date.parse(meditatie.Start),
+          prezenta: plati[elev.id].prezenta,
+          starePlata: plati[elev.id].starePlata,
+          Pret: meditatie.Pret,
+          sedintaID: actuallyTheGodID,
+        };
+        const whereIsSedinta = meditatiiOfElev[index]?.sedinte?.find(
+          (sedinta) => sedinta.TaskID === sedintaObject.TaskID
+        );
+        const indexSedinta =
+          meditatiiOfElev[index]?.sedinte?.indexOf(whereIsSedinta);
+        let sedinte = [];
+        if (indexSedinta === -1) {
+          if (meditatiiOfElev[index]?.sedinte?.length > 0)
+            sedinte = [...meditatiiOfElev[index].sedinte];
+          if (meditatie.Efectuata) sedinte.push(sedintaObject);
+        } else {
+          sedinte = [...meditatiiOfElev[index].sedinte];
+          if (meditatie.Efectuata) sedinte[indexSedinta] = sedintaObject;
+        }
 
         meditatiiOfElev[index] = {
           TaskID: meditatie.TaskID,
@@ -203,6 +257,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
           END: meditatie.End,
           seMaiTine: true,
           frecventa: frecventa,
+          sedinte: sedinte,
         };
         await setDoc(doc(db, "elevi", elev.id), {
           ...elev,
@@ -362,16 +417,13 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   //   [setDate]
   // );
 
-  const handleOrientationChange = React.useCallback((event) => {
-    setOrientation(event.target.getAttribute("data-orientation"));
-  }, []);
   async function removeMeditatieFromDatabase(meditatie) {
     await deleteDoc(doc(db, "meditatii", meditatie.TaskID));
     const profesorDeLaMedite = profesoriFromRedux.find(
       (prof) => prof.id === meditatie.PersonIDs
     )?.text;
     const grupaDeElevi = meditatie.ElevID.map(
-      (elevID) => eleviFromRedux.find((elev) => elev.id === elevID).text
+      (elevID) => eleviFromRedux.find((elev) => elev.id === elevID)?.text
     );
     meditatie.ElevID.forEach(async (elevId) => {
       const elev = eleviFromRedux.find((elev) => elev.id === elevId);
@@ -413,6 +465,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
           Start: meditatie.Start,
           END: meditatie.End,
           seMaiTine: false,
+          sedinte: meditatiiOfElev[index].sedinte,
         };
         await setDoc(doc(db, "elevi", elev.id), {
           ...elev,
@@ -424,7 +477,9 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   }
   const handleDataChange = React.useCallback(
     ({ created, updated, deleted }) => {
-      updated.forEach((meditatie) => addMeditatieToDatabase(meditatie));
+      updated.forEach((meditatie) =>
+        addMeditatieToDatabase({ ...meditatie }, plati)
+      );
       deleted.forEach((meditatie) => removeMeditatieFromDatabase(meditatie));
       setData((old) =>
         old
@@ -439,19 +494,26 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
           )
           .concat(
             created.map((item) => {
+              const TASKID = guid();
               addMeditatieToDatabase(
-                Object.assign({}, item, {
-                  TaskID: guid(),
-                })
+                Object.assign(
+                  {},
+                  { ...item },
+                  {
+                    TaskID: TASKID,
+                  }
+                ),
+
+                plati
               );
               return Object.assign({}, item, {
-                TaskID: guid(),
+                TaskID: TASKID,
               });
             })
           )
       );
     },
-    [setData]
+    [setData, plati]
   );
   const handleSelectedSali = (event) => {
     setSelectedSali([...event.value]);
@@ -715,7 +777,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
 
           <div className="col">
             <Button
-              style={{ backgroundColor: "#21ba45" }}
+              style={{ backgroundColor: "#21ba45", color: "white" }}
               onClick={() => {
                 setOrarPrincipal(orarPrincipal + 1);
               }}

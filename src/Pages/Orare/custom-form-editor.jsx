@@ -4,6 +4,8 @@ import { Label, Error } from "@progress/kendo-react-labels";
 import { TextArea } from "@progress/kendo-react-inputs";
 import { DatePicker, DateTimePicker } from "@progress/kendo-react-dateinputs";
 import { Button } from "@progress/kendo-react-buttons";
+import { db } from "../../firebase/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import {
   SalaEditor,
   EleviEditor,
@@ -15,39 +17,71 @@ import {
 } from "./editors";
 import { RadioButton } from "@progress/kendo-react-inputs";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { RadioGroup } from "@progress/kendo-react-inputs";
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { testSlice } from "../../redux/store";
+import { RadioGroup } from "@progress/kendo-react-inputs";
+
 const { actions } = testSlice;
 const { PLATI } = actions;
+////BUGGG DACA SE VA ADAIUGA UN ELEV NOU NU VA MERGE
 export const CustomFormEditor = (props) => {
+  console.log("din editor", props.valueGetter("RecurrenceID"));
   const eleviFromRedux = useSelector((state) => state.elevi);
   const [elevi, setElevi] = useState([]);
   const [selectedValue, setSelectedValue] = useState("neconfirmat");
   const dispatch = useDispatch();
   const plati = useSelector((state) => state.plati);
+  console.log(props);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  async function getDataOfSedinta(array) {
+    let copyOFPlati = {};
+    let copyOFPlatiFromDataBase = {};
+    console.log("intru in functie");
+    const Start = props?.valueGetter("Start");
+    const id = props?.valueGetter("TaskID");
+    console.log({ array });
+
+    console.log({ id });
+    if (id) {
+      console.log(id + Date.parse(Start));
+      const docRef = doc(db, "sedinte", id + Date.parse(Start));
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        copyOFPlatiFromDataBase = docSnap.data().plati;
+        console.log("sunt aici");
+      }
+    }
+    console.log(array);
+    array.forEach((elev) => {
+      if (copyOFPlatiFromDataBase.hasOwnProperty(elev.id))
+        copyOFPlati[elev.id] = copyOFPlatiFromDataBase[elev.id];
+      else
+        copyOFPlati[elev.id] = {
+          starePlata: "neconfirmat",
+          prezenta: "neconfirmat",
+        };
+      console.log(copyOFPlati);
+    });
+    dispatch(PLATI(copyOFPlati));
+  }
+
   useEffect(() => {
     let array = props
       ?.valueGetter("ElevID")
       ?.map((elev) =>
         eleviFromRedux.find((elevRedux) => elevRedux.id === elev)
       );
+    console.log("intru in useEffect");
     if (array === undefined) {
       array = [];
       dispatch(PLATI({}));
+    } else {
+      getDataOfSedinta(array);
     }
-    let platiOBject = {};
-    array.forEach((elev) => {
-      platiOBject[elev?.id] = {
-        statusPlata: "neconfirmat",
-        prezenta: "neconfirmat",
-      };
-    });
-    dispatch(PLATI({ ...platiOBject }));
-    console.log(plati);
-    setElevi(array);
-  }, [props]);
+
+    setElevi([...array]);
+  }, [eleviFromRedux, props?.valueGetter("ElevID")]);
+  console.log({ plati });
   useEffect(() => {
     if (props === undefined) return;
     let date = new Date(props.valueGetter("Start"));
@@ -56,7 +90,7 @@ export const CustomFormEditor = (props) => {
       value: date,
     });
   }, [props.valueGetter("Start")]);
-  console.log(plati);
+  console.log({ plati });
   return (
     <FormElement horizontal={true}>
       <div className="k-form-field">
@@ -87,50 +121,53 @@ export const CustomFormEditor = (props) => {
             alignItems: "center",
           }}
         >
-          {elevi?.map((elev, index) => {
-            console.log(elev);
-            return (
-              <div style={{ display: "block" }}>
-                <div style={{ fontWeight: "bold" }}>
-                  {index + 1}. {elev.text}
-                </div>
+          {props.valueGetter("RecurrenceID") &&
+            props.valueGetter("Efectuata") &&
+            elevi?.map((elev, index) => {
+              return (
+                <div style={{ display: "block" }}>
+                  <div style={{ fontWeight: "bold" }}>
+                    {index + 1}. {elev.text}
+                  </div>
 
-                <RadioGroup
-                  layout="horizontal"
-                  data={[
-                    { label: "Neconfirmat", value: "neconfirmat" },
-                    { label: "Platit", value: "platit" },
-                    { label: "Neplatit", value: "neplatit" },
-                  ]}
-                  onChange={(e) => {
-                    console.log(elev.id);
-                    const newObject = { ...plati };
-                    newObject[elev.id] = {
-                      ...newObject[elev.id],
-                      statusPlata: e.value,
-                    };
-                    dispatch(PLATI({ ...newObject }));
-                  }}
-                />
-                <RadioGroup
-                  layout="horizontal"
-                  data={[
-                    { label: "Neconfirmat", value: "neconfirmat" },
-                    { label: "Prezent", value: "Prezent" },
-                    { label: "Absent", value: "Absent" },
-                  ]}
-                  onChange={(e) => {
-                    const newObject = { ...plati };
-                    newObject[elev.id] = {
-                      ...newObject[elev.id],
-                      prezenta: e.value,
-                    };
-                    dispatch(PLATI({ ...newObject }));
-                  }}
-                />
-              </div>
-            );
-          })}
+                  <RadioGroup
+                    layout="horizontal"
+                    data={[
+                      { label: "Neconfirmat", value: "neconfirmat" },
+                      { label: "Platit", value: "platit" },
+                      { label: "Neplatit", value: "neplatit" },
+                    ]}
+                    value={plati[elev.id]?.starePlata}
+                    onChange={(e) => {
+                      console.log("ID", elev.id);
+                      let copyOFPlati = { ...plati };
+                      copyOFPlati[elev.id] = {
+                        starePlata: e.value,
+                        prezenta: plati[elev.id]?.prezenta,
+                      };
+                      dispatch(PLATI(copyOFPlati));
+                    }}
+                  />
+                  <RadioGroup
+                    layout="horizontal"
+                    data={[
+                      { label: "Neconfirmat", value: "neconfirmat" },
+                      { label: "Prezent", value: "Prezent" },
+                      { label: "Absent", value: "Absent" },
+                    ]}
+                    value={plati[elev.id]?.prezenta}
+                    onChange={(e) => {
+                      let copyOFPlati = { ...plati };
+                      copyOFPlati[elev.id] = {
+                        starePlata: plati[elev.id]?.starePlata,
+                        prezenta: e.value,
+                      };
+                      dispatch(PLATI(copyOFPlati));
+                    }}
+                  />
+                </div>
+              );
+            })}
         </div>
       </div>
       <div className="k-form-field">
@@ -167,7 +204,7 @@ export const CustomFormEditor = (props) => {
             component={props.startEditor || DatePicker}
             as={DateTimePicker}
             rows={1}
-            format={"dd-MMM-yyyy HH:mm"}
+            format={"HH:mm"}
           />
         </div>
       </div>
@@ -179,7 +216,7 @@ export const CustomFormEditor = (props) => {
             component={props.endEditor || DatePicker}
             as={DateTimePicker}
             rows={5}
-            format={"dd-MMM-yyyy HH:mm"}
+            format={"HH:mm"}
           />
         </div>
       </div>
