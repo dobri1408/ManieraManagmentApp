@@ -1,7 +1,7 @@
 import logo from "./logo.svg";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Orare from "./Pages/Orare/Orare";
+import Orare from "./Components/Scheduler/Orare";
 import Navbar from "./Components/Navbar";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -185,16 +185,23 @@ function App() {
             element={
               <Orare
                 resources={resources}
-                profesori={profesori}
-                elevi={elevi}
-                sali={saliResource}
+                materiiFromDataBase={materii}
+                meditatii={meditatii}
+                orientare={{ tip: "sali" }}
+              />
+            }
+          />
+          <Route path="/elevi" element={<Elevi />} />
+          <Route
+            path="/elev/:id"
+            element={
+              <ElevPage
+                resources={resources}
                 materiiFromDataBase={materii}
                 meditatii={meditatii}
               />
             }
           />
-          <Route path="/elevi" element={<Elevi />} />
-          <Route path="/elev/:id" element={<ElevPage />} />
           <Route path="/profesori" element={<Profesori />} />
           <Route path="/profesor/:id" element={<ProfesorPage />} />
           <Route path="/about" element={<About />} />

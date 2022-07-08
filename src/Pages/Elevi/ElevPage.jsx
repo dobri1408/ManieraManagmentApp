@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
-import Orar from "../../Components/Orar/Orar";
+import Orare from "../../Components/Scheduler/Orare";
 import { Button } from "semantic-ui-react";
 import ModalRegisterElev from "./ModalProfilElev";
 import { useSelector } from "react-redux";
-function ElevPage() {
+function ElevPage({ resources, materiiFromDataBase, meditatii }) {
   const id = useParams()?.id;
   const studentData = useSelector((state) =>
     state.elevi.find((elev) => elev.id === id)
@@ -43,9 +43,16 @@ function ElevPage() {
         >
           Detalii elev
         </Button>
-        <h1>{studentData?.prenume + "  " + studentData?.numeDeFamilie}</h1>
+        <h1>{studentData?.prenume + " " + studentData?.numeDeFamilie}</h1>
       </div>
-      <Orar />
+      {studentData?.text && (
+        <Orare
+          resources={resources}
+          meditatii={meditatii}
+          materiiFromDataBase={materiiFromDataBase}
+          orientare={{ tip: "elev", text: studentData?.text }}
+        />
+      )}
     </>
   );
 }

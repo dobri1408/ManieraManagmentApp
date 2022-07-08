@@ -60,7 +60,7 @@ export const customModelFields = {
   recurrenceId: "RecurrenceID",
   recurrenceExceptions: "RecurrenceException",
 };
-function Orare({ resources, materiiFromDataBase, meditatii }) {
+function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
   const locales = [
     {
       language: "en-US",
@@ -110,11 +110,19 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   }, [resources]);
 
   React.useEffect(() => {
-    if (sali.length > 0) setSelectedSali([...sali]);
-    setSelectedMaterii([]);
-    setSelectedElevi([]);
-    setSelectedProfesori([]);
-  }, [sali, orarPrincipal]);
+    if (orientare.tip === "sali") {
+      if (sali.length > 0) setSelectedSali([...sali]);
+      setSelectedMaterii([]);
+      setSelectedElevi([]);
+      setSelectedProfesori([]);
+    } else if (orientare.tip === "elev") {
+      console.log("orientare elev", orientare.text);
+      setSelectedElevi([orientare.text]);
+      setSelectedMaterii([]);
+
+      setSelectedProfesori([]);
+    }
+  }, [sali, orarPrincipal, orientare.tip, orientare.text]);
   async function addMeditatieToDatabase(meditatie, plati) {
     let id = meditatie.TaskID;
     if (
@@ -665,6 +673,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
     }
   }, [selectedElevi]);
 
+  console.log(selectedElevi);
   ///////////////////////////////////////////////
   React.useEffect(() => {
     if (resources.length > 0) {
