@@ -1,0 +1,21 @@
+.column1 {
+  float: left;
+  width: 12%;
+  padding: 10px;
+  padding-left: 20px;
+  height: 95vh; /* Should be removed. Only for demonstration */
+  border-right: 2px solid grey;
+}
+.column2 {
+  float: left;
+  width: 88%;
+  padding: 10px;
+  height: 95vh; /* Should be removed. Only for demonstration */
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}

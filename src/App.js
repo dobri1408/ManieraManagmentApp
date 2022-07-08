@@ -14,6 +14,7 @@ import { db } from "./firebase/firebase";
 import { getRandomColor } from "./utils/utils";
 import { useSelector, useDispatch } from "react-redux";
 import About from "./Pages/About";
+import Plati from "./Pages/Plati/Plati";
 import {
   getProfesori,
   getElevi,
@@ -198,6 +199,7 @@ function App() {
           <Route path="/profesori" element={<Profesori />} />
           <Route path="/profesor/:id" element={<ProfesorPage />} />
           <Route path="/about" element={<About />} />
+          <Route path="/plati" element={<Plati />} />
         </Routes>
       </Router>
     </>
