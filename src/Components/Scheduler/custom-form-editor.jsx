@@ -86,7 +86,6 @@ export const CustomFormEditor = (props) => {
     if (props === undefined) return;
     let date = new Date(props.valueGetter("Start"));
     date.setHours(date.getHours() + 2);
-
     props.onChange("End", {
       value: date,
     });

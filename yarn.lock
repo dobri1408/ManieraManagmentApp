@@ -2018,6 +2018,22 @@
     "@progress/kendo-draggable-common" "^0.2.1"
     prop-types "^15.6.0"
 
+"@progress/kendo-react-common@5.5.0":
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/@progress/kendo-react-common/-/kendo-react-common-5.5.0.tgz#473979ae900a8ed10a2067f522a0ac39e285056d"
+  integrity sha512-tA+zuchrXAJi6ssdyrUzLdPlZTqiWhTXboZ6aIzYi4u8dW/7X9MGv0kZ769YUejuG4hUEXehRXu/13psfjuJag==
+  dependencies:
+    "@progress/kendo-draggable-common" "^0.2.1"
+    prop-types "^15.6.0"
+
+"@progress/kendo-react-data-tools@^5.5.0":
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/@progress/kendo-react-data-tools/-/kendo-react-data-tools-5.5.0.tgz#e1ce3e3c6abaf5abbf874dbfe7924751a677e9a0"
+  integrity sha512-CdC3e5T2eRVpkbelCwy8LaSmwkH3z9VTOcirHBNmYvWGpE3pNmsfI4U9gzu4bgmD+98A4Okp9yR8hUCmG4TaVA==
+  dependencies:
+    "@progress/kendo-react-common" "5.5.0"
+    prop-types "^15.6.0"
+
 "@progress/kendo-react-dateinputs@latest":
   version "5.4.0"
   resolved "https://registry.yarnpkg.com/@progress/kendo-react-dateinputs/-/kendo-react-dateinputs-5.4.0.tgz#d2dcbc44559c1d8a0890a8572fd23402986ede0b"
@@ -2054,6 +2070,14 @@
   integrity sha512-Fn53yjGtbG4u1FqreaBZRspw3HfiQkgtkYzr0u/KQiPCsENEiqek/RxVf00OcPthnlW1uHUnn1xF7MRdNLoRag==
   dependencies:
     "@progress/kendo-react-common" "5.4.0"
+    prop-types "^15.6.0"
+
+"@progress/kendo-react-grid@^5.5.0":
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/@progress/kendo-react-grid/-/kendo-react-grid-5.5.0.tgz#162795254e707d1295c216fca256d4d9cd093c28"
+  integrity sha512-f9eN0V19kWvMDcvP0+cJVqzEKTh+XHkdsPlqP89SY3oaIQCuYp+Pr0G3dNhNO+GnxCm1CqCULDZo5ldXYMrQBA==
+  dependencies:
+    "@progress/kendo-react-common" "5.5.0"
     prop-types "^15.6.0"
 
 "@progress/kendo-react-inputs@latest":
