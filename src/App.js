@@ -10,6 +10,7 @@ import ElevPage from "./Pages/Elevi/ElevPage";
 import ProfesorPage from "./Pages/Profesori/ProfesorPage";
 import Profesori from "./Pages/Profesori/Profesori";
 import { collection, getDocs } from "firebase/firestore";
+import PlatiElev from "./Pages/Plati/PlatiElev";
 import { db } from "./firebase/firebase";
 import { getRandomColor } from "./utils/utils";
 import { useSelector, useDispatch } from "react-redux";
@@ -207,6 +208,7 @@ function App() {
           <Route path="/profesor/:id" element={<ProfesorPage />} />
           <Route path="/about" element={<About />} />
           <Route path="/plati" element={<Plati />} />
+          <Route path="/plati-elev/:id" element={<PlatiElev />} />
         </Routes>
       </Router>
     </>
