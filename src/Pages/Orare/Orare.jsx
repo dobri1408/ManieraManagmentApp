@@ -94,6 +94,7 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
   const eleviFromRedux = useSelector((state) => state.elevi);
   const profesoriFromRedux = useSelector((state) => state.profesori);
   const dispatch = useDispatch();
+  const plati = useSelector((state) => state.plati);
   const divs = React.useRef(
     document.getElementsByClassName("k-scheduler-body")
   );
@@ -161,11 +162,14 @@ function Orare({ resources, materiiFromDataBase, meditatii }) {
         else if (meditatie.RecurrenceRule.includes("WEEKLY"))
           frecventa += " zile";
       }
+
       if (
         meditatiiOfElev.find(
           (meditatieOfElev) => meditatieOfElev.TaskID === meditatie.TaskID
         ) === undefined
       ) {
+        const instante = [];
+
         await setDoc(doc(db, "elevi", elev.id), {
           ...elev,
           meditatii: [

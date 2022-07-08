@@ -17,29 +17,46 @@ import { RadioButton } from "@progress/kendo-react-inputs";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RadioGroup } from "@progress/kendo-react-inputs";
+import { useDispatch } from "react-redux";
+import { testSlice } from "../../redux/store";
+const { actions } = testSlice;
+const { PLATI } = actions;
 export const CustomFormEditor = (props) => {
   const eleviFromRedux = useSelector((state) => state.elevi);
   const [elevi, setElevi] = useState([]);
   const [selectedValue, setSelectedValue] = useState("neconfirmat");
-
+  const dispatch = useDispatch();
+  const plati = useSelector((state) => state.plati);
   useEffect(() => {
     let array = props
       ?.valueGetter("ElevID")
       ?.map((elev) =>
         eleviFromRedux.find((elevRedux) => elevRedux.id === elev)
       );
-    if (array === undefined) array = [];
+    if (array === undefined) {
+      array = [];
+      dispatch(PLATI({}));
+    }
+    let platiOBject = {};
+    array.forEach((elev) => {
+      platiOBject[elev?.id] = {
+        statusPlata: "neconfirmat",
+        prezenta: "neconfirmat",
+      };
+    });
+    dispatch(PLATI({ ...platiOBject }));
+    console.log(plati);
     setElevi(array);
   }, [props]);
   useEffect(() => {
     if (props === undefined) return;
     let date = new Date(props.valueGetter("Start"));
     date.setHours(date.getHours() + 2);
-
     props.onChange("End", {
       value: date,
     });
   }, [props.valueGetter("Start")]);
+  console.log(plati);
   return (
     <FormElement horizontal={true}>
       <div className="k-form-field">
@@ -71,6 +88,7 @@ export const CustomFormEditor = (props) => {
           }}
         >
           {elevi?.map((elev, index) => {
+            console.log(elev);
             return (
               <div style={{ display: "block" }}>
                 <div style={{ fontWeight: "bold" }}>
@@ -84,6 +102,15 @@ export const CustomFormEditor = (props) => {
                     { label: "Platit", value: "platit" },
                     { label: "Neplatit", value: "neplatit" },
                   ]}
+                  onChange={(e) => {
+                    console.log(elev.id);
+                    const newObject = { ...plati };
+                    newObject[elev.id] = {
+                      ...newObject[elev.id],
+                      statusPlata: e.value,
+                    };
+                    dispatch(PLATI({ ...newObject }));
+                  }}
                 />
                 <RadioGroup
                   layout="horizontal"
@@ -92,6 +119,14 @@ export const CustomFormEditor = (props) => {
                     { label: "Prezent", value: "Prezent" },
                     { label: "Absent", value: "Absent" },
                   ]}
+                  onChange={(e) => {
+                    const newObject = { ...plati };
+                    newObject[elev.id] = {
+                      ...newObject[elev.id],
+                      prezenta: e.value,
+                    };
+                    dispatch(PLATI({ ...newObject }));
+                  }}
                 />
               </div>
             );
