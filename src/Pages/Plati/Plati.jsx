@@ -39,7 +39,7 @@ export default function Plati() {
         const neplatite = meditatie.sedinte.filter(
           (sedinta) => sedinta.starePlata === "neplatit"
         );
-        console.log({ neplatite });
+
         if (neplatite?.length > 0) {
           if (
             financialData.find((data) => data.TaskID === meditatie.TaskID) ===
@@ -69,8 +69,7 @@ export default function Plati() {
       });
     });
   }, [elevi]);
-  console.log(financialData);
-  console.log(elevi);
+
   return (
     <>
       <h2>Plati</h2>

@@ -4,7 +4,6 @@ import { CustomFormEditor } from "./custom-form-editor";
 import { CustomDialog } from "./custom-dialog";
 
 export const FormWithCustomEditor = (props) => {
-  console.log({ props });
   const requiredValidator = React.useCallback(
     (value) =>
       value === undefined || value === null || value === "" || value === []

@@ -25,7 +25,6 @@ export const getProfesori = createAsyncThunk("GET_PROFESORI", async () => {
 });
 
 export const getElevi = createAsyncThunk("GET_ELEVI", async () => {
-  console.log("sunt in acction");
   const querySnapshot = await getDocs(collection(db, "elevi"));
 
   let array = [];

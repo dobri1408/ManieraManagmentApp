@@ -116,7 +116,6 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
       setSelectedElevi([]);
       setSelectedProfesori([]);
     } else if (orientare.tip === "elev") {
-      console.log("orientare elev", orientare.text);
       setSelectedElevi([orientare.text]);
       setSelectedMaterii([]);
 
@@ -152,7 +151,6 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
     const grupaDeElevi = meditatie.ElevID.map(
       (elevID) => eleviFromRedux.find((elev) => elev.id === elevID)?.text
     );
-    console.log("se intra aici", plati);
 
     await setDoc(
       doc(db, "sedinte", id + Date.parse(meditatie.Start)),
@@ -163,7 +161,7 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
       },
       { merge: true }
     );
-    console.log({ meditatie });
+
     let actuallyTheGodID = meditatie.TaskID;
     if (meditatie.RecurrenceID) meditatie.TaskID = meditatie.RecurrenceID;
     id = meditatie.TaskID;
@@ -205,7 +203,7 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
             sedintaID: actuallyTheGodID,
           });
         }
-        console.log("ajung aici");
+
         await setDoc(doc(db, "elevi", elev.id), {
           ...elev,
           meditatii: [
@@ -225,7 +223,6 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
           ],
         });
       } else {
-        console.log("ajung aici");
         const elment = meditatiiOfElev.find(
           (medi) => medi.TaskID === meditatie.TaskID
         );
@@ -673,7 +670,6 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
     }
   }, [selectedElevi]);
 
-  console.log(selectedElevi);
   ///////////////////////////////////////////////
   React.useEffect(() => {
     if (resources.length > 0) {

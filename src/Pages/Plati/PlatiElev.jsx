@@ -4,10 +4,24 @@ import { useSelector } from "react-redux";
 import { Grid, GridColumn as Column } from "@progress/kendo-react-grid";
 import { filterBy, orderBy } from "@progress/kendo-data-query";
 import { Icon, Tab, Checkbox, Button, Input } from "semantic-ui-react";
-import { doc, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  updateDoc,
+  getDoc,
+  arrayRemove,
+  arrayUnion,
+} from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 import "./Plati.css";
 import { getElevi } from "../../redux/actions";
+import { useDispatch } from "react-redux";
+const initialSort = [
+  {
+    field: "materie",
+    dir: "des",
+  },
+];
+
 function PlatiElev() {
   const elevi = useSelector((state) => state.elevi);
   const id = useParams();
@@ -16,10 +30,44 @@ function PlatiElev() {
   const [adauga, setAdauga] = useState(false);
   const [selectedAll, setSelectedAll] = useState(false);
   const [addMoney, setAddMoney] = useState(0);
+  const dispatch = useDispatch();
+  const [sort, setSort] = React.useState(initialSort);
   useEffect(() => {
     setElevData(elevi.find((elev) => elev.id === id.id));
-    console.log("sunt in elev");
   }, [id, elevi]);
+  const platesteCash = async (dataItem) => {
+    //sedinte database
+    let docRef = doc(
+      db,
+      "sedinte",
+      dataItem.sedintaID + Date.parse(dataItem.data)
+    );
+    let docSnap = await getDoc(docRef);
+    let plati = docSnap.data().plati;
+    plati[elevData.id].starePlata = "platit";
+
+    await updateDoc(docRef, {
+      plati: plati,
+    });
+
+    let MeditatieToFind = elevData.meditatii.find(
+      (meditatie) => meditatie.TaskID === dataItem.TaskID
+    );
+    let indexEL = elevData.meditatii.indexOf(MeditatieToFind);
+    let meditatiii = JSON.parse(JSON.stringify(elevData.meditatii));
+    let indexIDK = 0;
+    let elevRef = doc(db, "elevi", elevData.id);
+    let sedinta = MeditatieToFind.sedinte.find(
+      (sedinta) => sedinta.sedintaID === dataItem.sedintaID
+    );
+    let index = MeditatieToFind.sedinte.indexOf(sedinta);
+    meditatiii[indexEL].sedinte[index].starePlata = "platit";
+    console.log(MeditatieToFind, "bag");
+    await updateDoc(elevRef, {
+      meditatii: meditatiii,
+    });
+    dispatch(getElevi());
+  };
   const cellWithBackGround = (props) => {
     const style = {
       color: "red",
@@ -55,6 +103,9 @@ function PlatiElev() {
     return (
       <td>
         <Icon
+          onClick={() => {
+            platesteCash(props.dataItem);
+          }}
           name="money bill alternate"
           style={{ color: "#32ba4d", fontSize: "30px" }}
         />
@@ -77,7 +128,6 @@ function PlatiElev() {
       );
 
       if (neplatite?.length > 0) {
-        console.log(deplatit, neplatite);
         neplatite.forEach((sedinta) => {
           if (
             array.find((data) => data.sedintaID === sedinta.sedintaID) ===
@@ -90,8 +140,10 @@ function PlatiElev() {
               text: elevData.text,
               id: elevData.id,
               sedintaID: sedinta.sedintaID,
+              starePlata: sedinta.starePlata,
               Pret: sedinta.Pret,
               data: new Date(sedinta.Start.seconds * 1000),
+              TaskID: meditatie.TaskID,
             });
         });
       }
@@ -156,7 +208,15 @@ function PlatiElev() {
               <br />
               <br />
 
-              <Grid style={{}} data={deplatit}>
+              <Grid
+                style={{}}
+                data={orderBy(deplatit, sort)}
+                sortable={true}
+                sort={sort}
+                onSortChange={(e) => {
+                  setSort(e.sort);
+                }}
+              >
                 <Column title="Selecteaza" cell={facturaCell} width="90px" />
 
                 <Column field="text" title="Numele Elevului" />
