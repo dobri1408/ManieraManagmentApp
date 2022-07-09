@@ -3,13 +3,14 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Grid, GridColumn as Column } from "@progress/kendo-react-grid";
 import { filterBy, orderBy } from "@progress/kendo-data-query";
-import { Icon, Tab, Checkbox, Button } from "semantic-ui-react";
+import { Icon, Tab, Checkbox, Button, Input } from "semantic-ui-react";
 import "./Plati.css";
 function PlatiElev() {
   const elevi = useSelector((state) => state.elevi);
   const id = useParams();
   const [elevData, setElevData] = useState({});
   const [deplatit, setDeplatit] = useState([]);
+  const [adauga, setAdauga] = useState(false);
   useEffect(() => {
     setElevData(elevi.find((elev) => elev.id === id.id));
   }, [id]);
@@ -182,6 +183,49 @@ function PlatiElev() {
         <Icon name="credit card" style={{ fontSize: "30px" }} />
         <h3> Cont:0</h3>
       </div>
+      <br />
+      <div
+        style={{
+          alignText: "center",
+          display: "flex",
+          justifyContent: "center",
+          gap: "10px",
+        }}
+      >
+        {adauga === false && (
+          <Button
+            style={{ backgroundColor: "#21ba45", color: "white" }}
+            onClick={() => {
+              setAdauga(true);
+            }}
+          >
+            {" "}
+            Adauga bani in cont
+          </Button>
+        )}
+        {adauga === true && (
+          <>
+            <Input placeholder="Suma" />
+            <Button
+              style={{ backgroundColor: "#21ba45", color: "white" }}
+              onClick={() => {
+                setAdauga(false);
+              }}
+            >
+              Adauga
+            </Button>
+            <Button
+              style={{ backgroundColor: "red", color: "white" }}
+              onClick={() => {
+                setAdauga(false);
+              }}
+            >
+              Cancel
+            </Button>
+          </>
+        )}
+      </div>
+
       <br />
       <Tab panes={panes} />
     </>

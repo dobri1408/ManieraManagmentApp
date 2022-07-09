@@ -88,6 +88,8 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
         ziDefault={studentData?.zi}
         localitateDefault={studentData?.localitatea}
         clasaDefault={studentData?.clasa}
+        meditatiiDefault={studentData?.meditatii}
+        contDefault={studentData?.cont}
       />
       <Modal.Header>Detalii Elev</Modal.Header>
       <Modal.Content image scrolling>

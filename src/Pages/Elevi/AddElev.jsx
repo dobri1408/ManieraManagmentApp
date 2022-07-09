@@ -27,6 +27,8 @@ function AddElev({
   lunaDefault = "",
   localitateDefault = "",
   clasaDefault = "",
+  meditatiiDefault = [],
+  contDefault = 0,
   id = "",
 }) {
   const [materii, setMaterii] = useState(materiiDefault);
@@ -55,6 +57,8 @@ function AddElev({
       liceu,
       clasa,
       pregatiri: Object.fromEntries(meditatii),
+      meditatii: meditatiiDefault,
+      cont: contDefault,
     });
     dispatch(getElevi());
   }

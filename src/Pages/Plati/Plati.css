@@ -36,4 +36,5 @@
   left: 0;
 }
 #container > .second {
+  display: inline-block;
 }
