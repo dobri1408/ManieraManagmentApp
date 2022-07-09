@@ -7,15 +7,24 @@ import Orare from "../../Components/Scheduler/Orare";
 import { Button, Icon, Input } from "semantic-ui-react";
 import ModalRegisterElev from "./ModalProfilElev";
 import { useSelector } from "react-redux";
-
+import { getElevi } from "../../redux/actions";
+import { useDispatch } from "react-redux";
 function ElevPage({ resources, materiiFromDataBase, meditatii }) {
   const id = useParams()?.id;
+  const dispatch = useDispatch();
   const studentData = useSelector((state) =>
     state.elevi.find((elev) => elev.id === id)
   );
+  const [addMoney, setAddMoney] = useState(0);
   const [adauga, setAdauga] = useState(false);
   const [show, setShow] = useState(false);
-
+  const addMoneyToCont = async () => {
+    const washingtonRef = doc(db, "elevi", studentData.id);
+    await updateDoc(washingtonRef, {
+      cont: parseInt(studentData.cont) + parseInt(addMoney),
+    });
+    dispatch(getElevi());
+  };
   return (
     <>
       <ModalRegisterElev
@@ -50,7 +59,8 @@ function ElevPage({ resources, materiiFromDataBase, meditatii }) {
             " " +
             studentData?.numeDeFamilie +
             " -- " +
-            "Cont:0"}
+            "Cont:" +
+            studentData?.cont}
         </h1>
       </div>
       <div style={{ display: "flex", gap: "30px" }}>
@@ -67,10 +77,17 @@ function ElevPage({ resources, materiiFromDataBase, meditatii }) {
         )}
         {adauga === true && (
           <>
-            <Input placeholder="Suma" />
+            <Input
+              placeholder="Suma"
+              value={addMoney}
+              onChange={(e) => {
+                setAddMoney(e.target.value);
+              }}
+            />
             <Button
               style={{ backgroundColor: "#21ba45", color: "white" }}
               onClick={() => {
+                addMoneyToCont();
                 setAdauga(false);
               }}
             >

@@ -4,7 +4,10 @@ import { useSelector } from "react-redux";
 import { Grid, GridColumn as Column } from "@progress/kendo-react-grid";
 import { filterBy, orderBy } from "@progress/kendo-data-query";
 import { Icon, Tab, Checkbox, Button, Input } from "semantic-ui-react";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../../firebase/firebase";
 import "./Plati.css";
+import { getElevi } from "../../redux/actions";
 function PlatiElev() {
   const elevi = useSelector((state) => state.elevi);
   const id = useParams();
@@ -12,9 +15,11 @@ function PlatiElev() {
   const [deplatit, setDeplatit] = useState([]);
   const [adauga, setAdauga] = useState(false);
   const [selectedAll, setSelectedAll] = useState(false);
+  const [addMoney, setAddMoney] = useState(0);
   useEffect(() => {
     setElevData(elevi.find((elev) => elev.id === id.id));
-  }, [id]);
+    console.log("sunt in elev");
+  }, [id, elevi]);
   const cellWithBackGround = (props) => {
     const style = {
       color: "red",
@@ -22,7 +27,16 @@ function PlatiElev() {
     const field = props.field || "";
     return <td style={style}>{props.dataItem[field]}</td>;
   };
-
+  const addMoneyToCont = async () => {
+    const washingtonRef = doc(db, "elevi", elevData.id);
+    await updateDoc(washingtonRef, {
+      cont: parseInt(elevData.cont) + parseInt(addMoney),
+    });
+    setElevData({
+      ...elevData,
+      cont: parseInt(elevData.cont) + parseInt(addMoney),
+    });
+  };
   const facturaCell = (props) => {
     return (
       <td
@@ -56,35 +70,33 @@ function PlatiElev() {
   };
 
   useEffect(() => {
+    let array = [];
     elevData?.meditatii?.forEach((meditatie) => {
       let neplatite = meditatie.sedinte.filter(
         (sedinta) => sedinta.starePlata === "neplatit"
       );
 
       if (neplatite?.length > 0) {
+        console.log(deplatit, neplatite);
         neplatite.forEach((sedinta) => {
           if (
-            deplatit.find((data) => data.sedintaID === sedinta.sedintaID) ===
+            array.find((data) => data.sedintaID === sedinta.sedintaID) ===
             undefined
           )
-            setDeplatit([
-              ...deplatit,
-              {
-                profesor: meditatie.profesor,
-                grupa: meditatie.grupa,
-                materie: meditatie.materie,
-
-                text: elevData.text,
-                sedinte: neplatite,
-                id: elevData.id,
-                sedintaID: sedinta.sedintaID,
-                Pret: sedinta.Pret,
-                data: new Date(sedinta.Start.seconds * 1000),
-              },
-            ]);
+            array.push({
+              profesor: meditatie.profesor,
+              grupa: meditatie.grupa,
+              materie: meditatie.materie,
+              text: elevData.text,
+              id: elevData.id,
+              sedintaID: sedinta.sedintaID,
+              Pret: sedinta.Pret,
+              data: new Date(sedinta.Start.seconds * 1000),
+            });
         });
       }
     });
+    setDeplatit(array);
   }, [elevData]);
   console.log(deplatit);
   const panes = [
@@ -148,6 +160,8 @@ function PlatiElev() {
                 <Column title="Selecteaza" cell={facturaCell} width="90px" />
 
                 <Column field="text" title="Numele Elevului" />
+                <Column field="data" title="Data" />
+
                 <Column field="materie" title="Materie" filterable={false} />
                 <Column
                   field="profesor"
@@ -162,10 +176,10 @@ function PlatiElev() {
                   cell={cellWithBackGround}
                 />
                 <Column
-                  title="Plateste"
+                  title="Plateste cash"
                   filterable={false}
                   cell={PlatesteCell}
-                  width="100px"
+                  width="110px"
                 />
                 <Column
                   title="Plata din cont"
@@ -204,7 +218,7 @@ function PlatiElev() {
         }}
       >
         <Icon name="credit card" style={{ fontSize: "30px" }} />
-        <h3> Cont:0</h3>
+        <h3> Cont:{elevData?.cont}</h3>
       </div>
       <br />
       <div
@@ -228,10 +242,17 @@ function PlatiElev() {
         )}
         {adauga === true && (
           <>
-            <Input placeholder="Suma" />
+            <Input
+              placeholder="Suma"
+              type="number"
+              value={addMoney}
+              onChange={(e) => setAddMoney(e.target.value)}
+            />
             <Button
               style={{ backgroundColor: "#21ba45", color: "white" }}
-              onClick={() => {
+              onClick={async () => {
+                await addMoneyToCont();
+
                 setAdauga(false);
               }}
             >

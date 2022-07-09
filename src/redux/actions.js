@@ -25,9 +25,11 @@ export const getProfesori = createAsyncThunk("GET_PROFESORI", async () => {
 });
 
 export const getElevi = createAsyncThunk("GET_ELEVI", async () => {
+  console.log("sunt in acction");
   const querySnapshot = await getDocs(collection(db, "elevi"));
 
   let array = [];
+
   querySnapshot.forEach((doc) => {
     array.push({
       ...doc.data(),
@@ -35,6 +37,7 @@ export const getElevi = createAsyncThunk("GET_ELEVI", async () => {
       text: doc.data().prenume + " " + doc.data().numeDeFamilie,
       value: doc.id,
       color: getRandomColor(),
+      cont: parseInt(doc.data().cont),
     });
   });
   array.sort();
