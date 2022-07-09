@@ -19,3 +19,21 @@
   display: table;
   clear: both;
 }
+#container {
+  text-align: center;
+  position: relative;
+}
+#container:after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  height: 200%;
+  width: 1px;
+}
+#container > .first {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#container > .second {
+}
