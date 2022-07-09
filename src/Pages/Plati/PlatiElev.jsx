@@ -11,6 +11,7 @@ function PlatiElev() {
   const [elevData, setElevData] = useState({});
   const [deplatit, setDeplatit] = useState([]);
   const [adauga, setAdauga] = useState(false);
+  const [selectedAll, setSelectedAll] = useState(false);
   useEffect(() => {
     setElevData(elevi.find((elev) => elev.id === id.id));
   }, [id]);
@@ -59,37 +60,29 @@ function PlatiElev() {
       let neplatite = meditatie.sedinte.filter(
         (sedinta) => sedinta.starePlata === "neplatit"
       );
-      neplatite = neplatite.map((neplatit) => {
-        return {
-          text: elevData.text,
-          materie: meditatie.materie,
-          profesor: meditatie.profesor,
-          Pret: neplatit.Pret,
-          data: new Date(neplatit.Start.seconds * 1000),
-        };
-      });
-      if (neplatite?.length > 0) {
-        if (
-          deplatit.find((data) => data.TaskID === meditatie.TaskID) ===
-          undefined
-        )
-          setDeplatit([
-            ...deplatit,
-            {
-              numar: neplatite.length,
-              suma: neplatite?.reduce((total, currentValue) => {
-                return total + parseInt(currentValue.Pret);
-              }, 0),
-              profesor: meditatie.profesor,
-              grupa: meditatie.grupa,
-              materie: meditatie.materie,
 
-              text: elevData.text,
-              sedinte: neplatite,
-              id: elevData.id,
-              TaskID: meditatie.TaskID,
-            },
-          ]);
+      if (neplatite?.length > 0) {
+        neplatite.forEach((sedinta) => {
+          if (
+            deplatit.find((data) => data.sedintaID === sedinta.sedintaID) ===
+            undefined
+          )
+            setDeplatit([
+              ...deplatit,
+              {
+                profesor: meditatie.profesor,
+                grupa: meditatie.grupa,
+                materie: meditatie.materie,
+
+                text: elevData.text,
+                sedinte: neplatite,
+                id: elevData.id,
+                sedintaID: sedinta.sedintaID,
+                Pret: sedinta.Pret,
+                data: new Date(sedinta.Start.seconds * 1000),
+              },
+            ]);
+        });
       }
     });
   }, [elevData]);
@@ -99,60 +92,90 @@ function PlatiElev() {
       menuItem: "Sedinte Neplatite",
       render: () => (
         <Tab.Pane>
-          {deplatit.map((meditatie, index) => {
-            return (
-              <div style={{ marginLeft: "3vw" }}>
-                <div id="container">
-                  <div class="first">
-                    <Button
-                      style={{ backgroundColor: "#32ba4d", color: "white" }}
-                    >
-                      Exporta Factura
-                    </Button>
-                  </div>
-                  <h2 class="second">
-                    {index +
-                      1 +
-                      ". " +
-                      meditatie.materie +
-                      "-" +
-                      meditatie.profesor}
-                  </h2>
-                </div>
-                <br />
-                <Grid style={{}} data={meditatie.sedinte}>
-                  <Column title="    Factura" cell={facturaCell} width="70px" />
-
-                  <Column field="text" title="Numele Elevului" />
-                  <Column field="materie" title="Materie" filterable={false} />
-                  <Column
-                    field="profesor"
-                    filter="string"
-                    title="Profesor"
-                    filterable={false}
-                  />
-                  <Column
-                    field="Pret"
-                    title="Suma de Platit"
-                    filterable={false}
-                    cell={cellWithBackGround}
-                  />
-                  <Column
-                    title="Plateste"
-                    filterable={false}
-                    cell={PlatesteCell}
-                    width="100px"
-                  />
-                  <Column
-                    title="Plata din cont"
-                    filterable={false}
-                    cell={CardCell}
-                    width="120px"
-                  />
-                </Grid>
+          <div style={{ marginLeft: "3vw" }}>
+            <div id="container">
+              <div class="first">
+                {!selectedAll && (
+                  <Button
+                    onClick={() => {
+                      setSelectedAll(true);
+                    }}
+                  >
+                    Selecteaza tot
+                  </Button>
+                )}
+                {selectedAll && (
+                  <Button
+                    onClick={() => {
+                      setSelectedAll(false);
+                    }}
+                  >
+                    Deselecteaza
+                  </Button>
+                )}
+                <Button
+                  style={{
+                    backgroundColor: "yellow",
+                    color: "black",
+                    width: "11.5vw",
+                  }}
+                >
+                  <Icon name="file" />
+                  Exporta Factura
+                </Button>
+                <Button
+                  style={{
+                    backgroundColor: "#32ba4d",
+                    color: "white",
+                    width: "7.9vw",
+                  }}
+                >
+                  <Icon name="money bill" />
+                  Plateste
+                </Button>
+                <Button style={{ color: "black", width: "12vw" }}>
+                  <Icon name="credit card" style={{ color: "black" }} />
+                  Plateste din Cont
+                </Button>
               </div>
-            );
-          })}
+
+              <br />
+
+              <br />
+              <br />
+
+              <Grid style={{}} data={deplatit}>
+                <Column title="Selecteaza" cell={facturaCell} width="90px" />
+
+                <Column field="text" title="Numele Elevului" />
+                <Column field="materie" title="Materie" filterable={false} />
+                <Column
+                  field="profesor"
+                  filter="string"
+                  title="Profesor"
+                  filterable={false}
+                />
+                <Column
+                  field="Pret"
+                  title="Suma de Platit"
+                  filterable={false}
+                  cell={cellWithBackGround}
+                />
+                <Column
+                  title="Plateste"
+                  filterable={false}
+                  cell={PlatesteCell}
+                  width="100px"
+                />
+                <Column
+                  title="Plata din cont"
+                  filterable={false}
+                  cell={CardCell}
+                  width="120px"
+                />
+              </Grid>
+            </div>
+          </div>
         </Tab.Pane>
       ),
     },
