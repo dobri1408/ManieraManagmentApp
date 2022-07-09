@@ -68,6 +68,47 @@ function PlatiElev() {
     });
     dispatch(getElevi());
   };
+  const platesteCard = async (dataItem) => {
+    //sedinte database
+    let docRef = doc(
+      db,
+      "sedinte",
+      dataItem.sedintaID + Date.parse(dataItem.data)
+    );
+    let docSnap = await getDoc(docRef);
+    let plati = docSnap.data().plati;
+    plati[elevData.id].starePlata = "platit";
+
+    await updateDoc(docRef, {
+      plati: plati,
+    });
+
+    let MeditatieToFind = elevData.meditatii.find(
+      (meditatie) => meditatie.TaskID === dataItem.TaskID
+    );
+    let indexEL = elevData.meditatii.indexOf(MeditatieToFind);
+    let meditatiii = JSON.parse(JSON.stringify(elevData.meditatii));
+    let indexIDK = 0;
+    let elevRef = doc(db, "elevi", elevData.id);
+    let sedinta = MeditatieToFind.sedinte.find(
+      (sedinta) => sedinta.sedintaID === dataItem.sedintaID
+    );
+    let index = MeditatieToFind.sedinte.indexOf(sedinta);
+    meditatiii[indexEL].sedinte[index].starePlata = "platit";
+    console.log(MeditatieToFind, "bag");
+    await updateDoc(elevRef, {
+      meditatii: meditatiii,
+    });
+    const washingtonRef = doc(db, "elevi", elevData.id);
+    await updateDoc(washingtonRef, {
+      cont: parseInt(elevData.cont) - parseInt(sedinta.Pret),
+    });
+    setElevData({
+      ...elevData,
+      cont: parseInt(elevData.cont) + parseInt(sedinta.Pret),
+    });
+    dispatch(getElevi());
+  };
   const cellWithBackGround = (props) => {
     const style = {
       color: "red",
@@ -113,11 +154,19 @@ function PlatiElev() {
     );
   };
   const CardCell = (props) => {
-    return (
-      <td>
-        <Icon name="credit card" style={{ fontSize: "30px" }} />
-      </td>
-    );
+    if (parseInt(elevData.cont) >= parseInt(props.dataItem["Pret"]))
+      return (
+        <td>
+          <Icon
+            name="credit card outline"
+            style={{ fontSize: "30px" }}
+            onClick={() => {
+              platesteCard(props.dataItem);
+            }}
+          />
+        </td>
+      );
+    else return <td>Fonduri Insuficiente</td>;
   };
 
   useEffect(() => {
@@ -198,16 +247,22 @@ function PlatiElev() {
                   Plateste
                 </Button>
                 <Button style={{ color: "black", width: "12vw" }}>
-                  <Icon name="credit card" style={{ color: "black" }} />
+                  <Icon name="credit card outline" style={{ color: "black" }} />
                   Plateste din Cont
                 </Button>
               </div>
-
+              <div style={{ paddingLeft: "69vw", color: "red" }}>
+                <h2>
+                  Total De Plata :{" "}
+                  {deplatit.reduce(
+                    (prev, current) => parseInt(prev) + parseInt(current.Pret),
+                    0
+                  )}
+                </h2>
+              </div>
               <br />
-
               <br />
               <br />
-
               <Grid
                 style={{}}
                 data={orderBy(deplatit, sort)}
@@ -277,7 +332,7 @@ function PlatiElev() {
           gap: "10px",
         }}
       >
-        <Icon name="credit card" style={{ fontSize: "30px" }} />
+        <Icon name="credit card outline" style={{ fontSize: "30px" }} />
         <h3> Cont:{elevData?.cont}</h3>
       </div>
       <br />
