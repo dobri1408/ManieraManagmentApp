@@ -38,3 +38,7 @@
 #container > .second {
   display: inline-block;
 }
+.ui.primary.button,
+.ui.primary.buttons .button {
+  background-color: #21ba45;
+}

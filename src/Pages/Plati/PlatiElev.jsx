@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Grid, GridColumn as Column } from "@progress/kendo-react-grid";
 import { filterBy, orderBy } from "@progress/kendo-data-query";
-import { Icon, Tab, Checkbox, Button, Input } from "semantic-ui-react";
+import { Icon, Tab, Checkbox, Button, Input, Confirm } from "semantic-ui-react";
 import {
   doc,
   updateDoc,
@@ -32,6 +32,10 @@ function PlatiElev() {
   const [addMoney, setAddMoney] = useState(0);
   const dispatch = useDispatch();
   const [sort, setSort] = React.useState(initialSort);
+  const [selectedSedinte, setSelectedSedinte] = useState([]);
+  const [confirmationShow, setConfirmationShow] = useState(false);
+  const [whichAction, setWichAction] = useState("none");
+  const [propsForAction, setProosForAction] = useState({});
   useEffect(() => {
     setElevData(elevi.find((elev) => elev.id === id.id));
   }, [id, elevi]);
@@ -145,7 +149,9 @@ function PlatiElev() {
       <td>
         <Icon
           onClick={() => {
-            platesteCash(props.dataItem);
+            setProosForAction(props);
+            setWichAction("onlyOneCash");
+            setConfirmationShow(true);
           }}
           name="money bill alternate"
           style={{ color: "#32ba4d", fontSize: "30px" }}
@@ -161,7 +167,9 @@ function PlatiElev() {
             name="credit card outline"
             style={{ fontSize: "30px" }}
             onClick={() => {
-              platesteCard(props.dataItem);
+              setProosForAction(props);
+              setWichAction("onlyOneCard");
+              setConfirmationShow(true);
             }}
           />
         </td>
@@ -321,6 +329,21 @@ function PlatiElev() {
           justifyContent: "center",
         }}
       >
+        <Confirm
+          style={{ position: "relative", width: "30vw", height: "20vh" }}
+          open={confirmationShow}
+          onCancel={() => {
+            setConfirmationShow(false);
+          }}
+          content="Esti sigur?"
+          onConfirm={() => {
+            if (whichAction === "onlyOneCash")
+              platesteCash(propsForAction.dataItem);
+            else if (whichAction === "onlyOneCard")
+              platesteCard(propsForAction.dataItem);
+            setConfirmationShow(false);
+          }}
+        />
         <h1>{elevData?.text} - Plati</h1>
       </div>
       <br />
