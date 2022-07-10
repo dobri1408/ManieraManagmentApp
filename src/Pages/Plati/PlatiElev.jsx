@@ -36,6 +36,7 @@ function PlatiElev() {
     setElevData(elevi.find((elev) => elev.id === id.id));
   }, [id, elevi]);
   const platesteCash = async (dataItem) => {
+    console.log("intru aiciciici");
     //sedinte database
     let docRef = doc(
       db,
@@ -68,6 +69,7 @@ function PlatiElev() {
     dispatch(getElevi());
   };
   const platesteCard = async (dataItem) => {
+    console.log("intru aiciciici");
     //sedinte database
     let docRef = doc(
       db,
@@ -104,7 +106,7 @@ function PlatiElev() {
     });
     setElevData({
       ...elevData,
-      cont: parseInt(elevData.cont) + parseInt(sedinta.Pret),
+      cont: parseInt(elevData.cont) - parseInt(sedinta.Pret),
     });
     dispatch(getElevi());
   };
@@ -139,19 +141,16 @@ function PlatiElev() {
           className="checker"
           checked={checked[props.dataItem.sedintaID]}
           onChange={(e, data) => {
-            console.log(selectedSedinte);
             let object = { ...checked };
             object[props.dataItem.sedintaID] = data.checked;
             setChecked(object);
             if (data.checked === true) {
               selectedSedinte.current.push(props.dataItem);
-              console.log("intru");
-              console.log(selectedSedinte);
             } else {
               let array = [...selectedSedinte.current];
               let index = array.indexOf(props.dataItem);
               if (index > -1) array.splice(index, 1);
-              console.log(array);
+
               selectedSedinte.current = array;
             }
           }}
@@ -159,6 +158,19 @@ function PlatiElev() {
       </td>
     );
   };
+  const platesteCashAll = () => {
+    if (selectedSedinte.current.length > 0)
+      selectedSedinte.current.forEach(
+        async (sedinta) => await platesteCash(sedinta)
+      );
+  };
+  const platesteCardAll = () => {
+    if (selectedSedinte.current.length > 0)
+      selectedSedinte.current.forEach(
+        async (sedinta) => await platesteCard(sedinta)
+      );
+  };
+
   const PlatesteCell = (props) => {
     return (
       <td>
@@ -191,7 +203,7 @@ function PlatiElev() {
       );
     else return <td>Fonduri Insuficiente</td>;
   };
-  console.log(selectedSedinte);
+
   useEffect(() => {
     let array = [];
     elevData?.meditatii?.forEach((meditatie) => {
@@ -200,6 +212,7 @@ function PlatiElev() {
       );
 
       if (neplatite?.length > 0) {
+        let object = {};
         neplatite.forEach((sedinta) => {
           if (
             array.find((data) => data.sedintaID === sedinta.sedintaID) ===
@@ -218,12 +231,11 @@ function PlatiElev() {
               TaskID: meditatie.TaskID,
               checked: false,
             });
-            let object = { ...checked };
 
             object[sedinta.sedintaID] = false;
-            setChecked(object);
           }
         });
+        setChecked(object);
       }
     });
     setDeplatit(array);
@@ -284,14 +296,40 @@ function PlatiElev() {
                     color: "white",
                     width: "7.9vw",
                   }}
+                  onClick={() => {
+                    setWichAction("platesteCashAll");
+                    setConfirmationShow(true);
+                  }}
                 >
                   <Icon name="money bill" />
                   Plateste
                 </Button>
-                <Button style={{ color: "black", width: "12vw" }}>
-                  <Icon name="credit card outline" style={{ color: "black" }} />
-                  Plateste din Cont
-                </Button>
+                {selectedSedinte.current.reduce(
+                  (total, cuurentValue) => total + cuurentValue.Pret,
+                  0
+                ) <= elevData?.cont && (
+                  <Button
+                    style={{ color: "black", width: "12vw" }}
+                    onClick={() => {
+                      setWichAction("platesteCardAll");
+                      setConfirmationShow(true);
+                    }}
+                  >
+                    <Icon
+                      name="credit card outline"
+                      style={{ color: "black" }}
+                    />
+                    Plateste din Cont
+                  </Button>
+                )}
+                {selectedSedinte.current.reduce(
+                  (total, cuurentValue) => total + cuurentValue.Pret,
+                  0
+                ) > elevData?.cont && (
+                  <Button style={{ backgroundColor: "grey" }} disable>
+                    Fonduri Insuficiente
+                  </Button>
+                )}
               </div>
               <div style={{ paddingLeft: "69vw", color: "red" }}>
                 <h2>
@@ -374,6 +412,8 @@ function PlatiElev() {
               platesteCash(propsForAction.dataItem);
             else if (whichAction === "onlyOneCard")
               platesteCard(propsForAction.dataItem);
+            else if (whichAction === "platesteCashAll") platesteCashAll();
+            else if (whichAction === "platesteCardAll") platesteCardAll();
             setConfirmationShow(false);
           }}
         />
