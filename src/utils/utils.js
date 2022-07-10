@@ -10,3 +10,8 @@ export const getPrescurtare = (string) => {
 
   return firstLetters;
 };
+export function arrayRemove(arr, value) {
+  return arr.filter(function (ele) {
+    return ele != value;
+  });
+}

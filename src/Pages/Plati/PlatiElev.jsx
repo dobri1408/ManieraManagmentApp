@@ -1,20 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Grid, GridColumn as Column } from "@progress/kendo-react-grid";
 import { filterBy, orderBy } from "@progress/kendo-data-query";
 import { Icon, Tab, Checkbox, Button, Input, Confirm } from "semantic-ui-react";
-import {
-  doc,
-  updateDoc,
-  getDoc,
-  arrayRemove,
-  arrayUnion,
-} from "firebase/firestore";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 import "./Plati.css";
 import { getElevi } from "../../redux/actions";
 import { useDispatch } from "react-redux";
+import { arrayRemove } from "firebase/firestore";
 const initialSort = [
   {
     field: "materie",
@@ -32,7 +27,8 @@ function PlatiElev() {
   const [addMoney, setAddMoney] = useState(0);
   const dispatch = useDispatch();
   const [sort, setSort] = React.useState(initialSort);
-  const [selectedSedinte, setSelectedSedinte] = useState([]);
+  const selectedSedinte = useRef([]);
+  const [checked, setChecked] = useState({});
   const [confirmationShow, setConfirmationShow] = useState(false);
   const [whichAction, setWichAction] = useState("none");
   const [propsForAction, setProosForAction] = useState({});
@@ -59,14 +55,13 @@ function PlatiElev() {
     );
     let indexEL = elevData.meditatii.indexOf(MeditatieToFind);
     let meditatiii = JSON.parse(JSON.stringify(elevData.meditatii));
-    let indexIDK = 0;
     let elevRef = doc(db, "elevi", elevData.id);
     let sedinta = MeditatieToFind.sedinte.find(
       (sedinta) => sedinta.sedintaID === dataItem.sedintaID
     );
     let index = MeditatieToFind.sedinte.indexOf(sedinta);
     meditatiii[indexEL].sedinte[index].starePlata = "platit";
-    console.log(MeditatieToFind, "bag");
+
     await updateDoc(elevRef, {
       meditatii: meditatiii,
     });
@@ -99,7 +94,7 @@ function PlatiElev() {
     );
     let index = MeditatieToFind.sedinte.indexOf(sedinta);
     meditatiii[indexEL].sedinte[index].starePlata = "platit";
-    console.log(MeditatieToFind, "bag");
+
     await updateDoc(elevRef, {
       meditatii: meditatiii,
     });
@@ -140,7 +135,27 @@ function PlatiElev() {
           paddingTop: "1vw",
         }}
       >
-        <Checkbox />
+        <Checkbox
+          className="checker"
+          checked={checked[props.dataItem.sedintaID]}
+          onChange={(e, data) => {
+            console.log(selectedSedinte);
+            let object = { ...checked };
+            object[props.dataItem.sedintaID] = data.checked;
+            setChecked(object);
+            if (data.checked === true) {
+              selectedSedinte.current.push(props.dataItem);
+              console.log("intru");
+              console.log(selectedSedinte);
+            } else {
+              let array = [...selectedSedinte.current];
+              let index = array.indexOf(props.dataItem);
+              if (index > -1) array.splice(index, 1);
+              console.log(array);
+              selectedSedinte.current = array;
+            }
+          }}
+        />
       </td>
     );
   };
@@ -176,7 +191,7 @@ function PlatiElev() {
       );
     else return <td>Fonduri Insuficiente</td>;
   };
-
+  console.log(selectedSedinte);
   useEffect(() => {
     let array = [];
     elevData?.meditatii?.forEach((meditatie) => {
@@ -189,7 +204,7 @@ function PlatiElev() {
           if (
             array.find((data) => data.sedintaID === sedinta.sedintaID) ===
             undefined
-          )
+          ) {
             array.push({
               profesor: meditatie.profesor,
               grupa: meditatie.grupa,
@@ -201,13 +216,19 @@ function PlatiElev() {
               Pret: sedinta.Pret,
               data: new Date(sedinta.Start.seconds * 1000),
               TaskID: meditatie.TaskID,
+              checked: false,
             });
+            let object = { ...checked };
+
+            object[sedinta.sedintaID] = false;
+            setChecked(object);
+          }
         });
       }
     });
     setDeplatit(array);
   }, [elevData]);
-  console.log(deplatit);
+
   const panes = [
     {
       menuItem: "Sedinte Neplatite",
@@ -220,6 +241,13 @@ function PlatiElev() {
                   <Button
                     onClick={() => {
                       setSelectedAll(true);
+
+                      let object = { ...checked };
+                      for (const [key, value] of Object.entries(object)) {
+                        object[key] = true;
+                      }
+                      selectedSedinte.current = [...deplatit];
+                      setChecked(object);
                     }}
                   >
                     Selecteaza tot
@@ -229,6 +257,12 @@ function PlatiElev() {
                   <Button
                     onClick={() => {
                       setSelectedAll(false);
+                      let object = { ...checked };
+                      for (const [key, value] of Object.entries(object)) {
+                        object[key] = false;
+                      }
+                      setChecked(object);
+                      selectedSedinte.current = [];
                     }}
                   >
                     Deselecteaza
@@ -269,8 +303,7 @@ function PlatiElev() {
                 </h2>
               </div>
               <br />
-              <br />
-              <br />
+
               <Grid
                 style={{}}
                 data={orderBy(deplatit, sort)}
