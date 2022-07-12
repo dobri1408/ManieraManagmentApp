@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { Grid, GridColumn as Column } from "@progress/kendo-react-grid";
 import { filterBy, orderBy } from "@progress/kendo-data-query";
 import { Icon, Tab, Checkbox, Button, Input, Confirm } from "semantic-ui-react";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { doc, updateDoc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 import "./Plati.css";
 import { getElevi } from "../../redux/actions";
@@ -16,11 +16,15 @@ const initialSort = [
     dir: "des",
   },
 ];
+///STERGE SELECTEDD ALL DUPA O ACTIUNE BOSS
 
 function PlatiElev() {
   const elevi = useSelector((state) => state.elevi);
   const id = useParams();
-  const [elevData, setElevData] = useState({});
+
+  const elevData = useSelector((state) =>
+    state.elevi.find((elev) => elev.id === id.id)
+  );
   const [deplatit, setDeplatit] = useState([]);
   const [adauga, setAdauga] = useState(false);
   const [selectedAll, setSelectedAll] = useState(false);
@@ -32,42 +36,46 @@ function PlatiElev() {
   const [confirmationShow, setConfirmationShow] = useState(false);
   const [whichAction, setWichAction] = useState("none");
   const [propsForAction, setProosForAction] = useState({});
-  useEffect(() => {
-    setElevData(elevi.find((elev) => elev.id === id.id));
-  }, [id, elevi]);
-  const platesteCash = async (dataItem) => {
-    console.log("intru aiciciici");
-    //sedinte database
-    let docRef = doc(
-      db,
-      "sedinte",
-      dataItem.sedintaID + Date.parse(dataItem.data)
-    );
-    let docSnap = await getDoc(docRef);
-    let plati = docSnap.data().plati;
-    plati[elevData.id].starePlata = "platit";
 
-    await updateDoc(docRef, {
-      plati: plati,
-    });
+  const platesteCash = React.useCallback(
+    async (dataItem) => {
+      console.log("intru aiciciici");
+      //sedinte database
+      console.log(dataItem.sedintaID);
+      let docRef = doc(
+        db,
+        "sedinte",
+        dataItem.sedintaID + Date.parse(dataItem.data)
+      );
+      let docSnap = await getDoc(docRef);
+      let plati = docSnap.data().plati;
+      plati[elevData.id].starePlata = "platit";
 
-    let MeditatieToFind = elevData.meditatii.find(
-      (meditatie) => meditatie.TaskID === dataItem.TaskID
-    );
-    let indexEL = elevData.meditatii.indexOf(MeditatieToFind);
-    let meditatiii = JSON.parse(JSON.stringify(elevData.meditatii));
-    let elevRef = doc(db, "elevi", elevData.id);
-    let sedinta = MeditatieToFind.sedinte.find(
-      (sedinta) => sedinta.sedintaID === dataItem.sedintaID
-    );
-    let index = MeditatieToFind.sedinte.indexOf(sedinta);
-    meditatiii[indexEL].sedinte[index].starePlata = "platit";
+      await updateDoc(docRef, {
+        plati: plati,
+      });
+      let elevRef = doc(db, "elevi", elevData.id);
+      docSnap = await getDoc(elevRef);
+      let meditatiii = docSnap.data().meditatii;
+      let MeditatieToFind = elevData.meditatii.find(
+        (meditatie) => meditatie.TaskID === dataItem.TaskID
+      );
+      let indexEL = elevData.meditatii.indexOf(MeditatieToFind);
 
-    await updateDoc(elevRef, {
-      meditatii: meditatiii,
-    });
-    dispatch(getElevi());
-  };
+      let sedinta = MeditatieToFind.sedinte.find(
+        (sedinta) => sedinta.sedintaID === dataItem.sedintaID
+      );
+      let index = MeditatieToFind.sedinte.indexOf(sedinta);
+      console.log("DAM IT", indexEL, index);
+      meditatiii[indexEL].sedinte[index].starePlata = "platit";
+      console.log({ meditatiii });
+      await updateDoc(elevRef, {
+        meditatii: meditatiii,
+      });
+      dispatch(getElevi());
+    },
+    [dispatch, elevData?.id, elevData?.meditatii]
+  );
   const platesteCard = async (dataItem) => {
     console.log("intru aiciciici");
     //sedinte database
@@ -95,19 +103,17 @@ function PlatiElev() {
       (sedinta) => sedinta.sedintaID === dataItem.sedintaID
     );
     let index = MeditatieToFind.sedinte.indexOf(sedinta);
+
     meditatiii[indexEL].sedinte[index].starePlata = "platit";
 
     await updateDoc(elevRef, {
-      meditatii: meditatiii,
+      meditatii: [...meditatiii],
     });
     const washingtonRef = doc(db, "elevi", elevData.id);
     await updateDoc(washingtonRef, {
       cont: parseInt(elevData.cont) - parseInt(sedinta.Pret),
     });
-    setElevData({
-      ...elevData,
-      cont: parseInt(elevData.cont) - parseInt(sedinta.Pret),
-    });
+
     dispatch(getElevi());
   };
   const cellWithBackGround = (props) => {
@@ -122,11 +128,10 @@ function PlatiElev() {
     await updateDoc(washingtonRef, {
       cont: parseInt(elevData.cont) + parseInt(addMoney),
     });
-    setElevData({
-      ...elevData,
-      cont: parseInt(elevData.cont) + parseInt(addMoney),
-    });
+
+    dispatch(getElevi());
   };
+  console.log(deplatit);
   const facturaCell = (props) => {
     return (
       <td
@@ -158,17 +163,98 @@ function PlatiElev() {
       </td>
     );
   };
-  const platesteCashAll = () => {
-    if (selectedSedinte.current.length > 0)
-      selectedSedinte.current.forEach(
-        async (sedinta) => await platesteCash(sedinta)
+  const platesteCashAll = async () => {
+    if (selectedSedinte.current.length > 0) {
+      const elevRef = doc(db, "elevi", elevData.id);
+      console.log(elevData.id);
+
+      let meditatiii = JSON.parse(JSON.stringify(elevData.meditatii));
+      selectedSedinte.current.forEach((dataItem) => {
+        let MeditatieToFind = meditatiii.find(
+          (meditatie) => meditatie.TaskID === dataItem.TaskID
+        );
+        let indexEL = meditatiii.indexOf(MeditatieToFind);
+
+        let sedinta = MeditatieToFind.sedinte.find(
+          (sedinta) => sedinta.sedintaID === dataItem.sedintaID
+        );
+        let index = MeditatieToFind.sedinte.indexOf(sedinta);
+        console.log("DAM IT", indexEL, index);
+        meditatiii[indexEL].sedinte[index].starePlata = "platit";
+      });
+      console.log("asta va pune", meditatiii, meditatiii);
+      await updateDoc(
+        elevRef,
+        {
+          meditatii: meditatiii,
+        },
+        { merge: true }
       );
+      console.log("wtf");
+      dispatch(getElevi());
+      selectedSedinte.current.forEach(async (dataItem) => {
+        let docRef = doc(
+          db,
+          "sedinte",
+          dataItem.sedintaID + Date.parse(dataItem.data)
+        );
+        let docSnap = getDoc(docRef);
+        let plati = docSnap.data().plati;
+        plati[elevData.id].starePlata = "platit";
+
+        updateDoc(docRef, {
+          plati: plati,
+        });
+      });
+    }
   };
-  const platesteCardAll = () => {
-    if (selectedSedinte.current.length > 0)
-      selectedSedinte.current.forEach(
-        async (sedinta) => await platesteCard(sedinta)
+  const platesteCardAll = async () => {
+    if (selectedSedinte.current.length > 0) {
+      const elevRef = doc(db, "elevi", elevData.id);
+      console.log(elevData.id);
+      let total = 0;
+      let meditatiii = JSON.parse(JSON.stringify(elevData.meditatii));
+      selectedSedinte.current.forEach((dataItem) => {
+        let MeditatieToFind = meditatiii.find(
+          (meditatie) => meditatie.TaskID === dataItem.TaskID
+        );
+        let indexEL = meditatiii.indexOf(MeditatieToFind);
+        total += parseInt(dataItem.Pret);
+        let sedinta = MeditatieToFind.sedinte.find(
+          (sedinta) => sedinta.sedintaID === dataItem.sedintaID
+        );
+        let index = MeditatieToFind.sedinte.indexOf(sedinta);
+        console.log("DAM IT", indexEL, index);
+        meditatiii[indexEL].sedinte[index].starePlata = "platit";
+      });
+      console.log("asta va pune", meditatiii, meditatiii);
+      await updateDoc(
+        elevRef,
+        {
+          meditatii: meditatiii,
+        },
+        { merge: true }
       );
+      console.log("wtf");
+      dispatch(getElevi());
+      selectedSedinte.current.forEach(async (dataItem) => {
+        let docRef = doc(
+          db,
+          "sedinte",
+          dataItem.sedintaID + Date.parse(dataItem.data)
+        );
+        let docSnap = getDoc(docRef);
+        let plati = docSnap.data().plati;
+        plati[elevData.id].starePlata = "platit";
+
+        await updateDoc(docRef, {
+          plati: plati,
+        });
+      });
+      await updateDoc(elevRef, {
+        cont: parseInt(elevData.cont) - parseInt(total),
+      });
+    }
   };
 
   const PlatesteCell = (props) => {
@@ -305,9 +391,9 @@ function PlatiElev() {
                   Plateste
                 </Button>
                 {selectedSedinte.current.reduce(
-                  (total, cuurentValue) => total + cuurentValue.Pret,
+                  (total, cuurentValue) => total + parseInt(cuurentValue.Pret),
                   0
-                ) <= elevData?.cont && (
+                ) <= parseInt(elevData?.cont) && (
                   <Button
                     style={{ color: "black", width: "12vw" }}
                     onClick={() => {
@@ -323,9 +409,9 @@ function PlatiElev() {
                   </Button>
                 )}
                 {selectedSedinte.current.reduce(
-                  (total, cuurentValue) => total + cuurentValue.Pret,
+                  (total, cuurentValue) => total + parseInt(cuurentValue.Pret),
                   0
-                ) > elevData?.cont && (
+                ) > parseInt(elevData?.cont) && (
                   <Button style={{ backgroundColor: "grey" }} disable>
                     Fonduri Insuficiente
                   </Button>
@@ -415,6 +501,7 @@ function PlatiElev() {
             else if (whichAction === "platesteCashAll") platesteCashAll();
             else if (whichAction === "platesteCardAll") platesteCardAll();
             setConfirmationShow(false);
+            selectedSedinte.current = [];
           }}
         />
         <h1>{elevData?.text} - Plati</h1>
