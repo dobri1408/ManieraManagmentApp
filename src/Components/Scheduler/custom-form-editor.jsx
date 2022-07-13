@@ -27,7 +27,6 @@ const { PLATI } = actions;
 export const CustomFormEditor = (props) => {
   const eleviFromRedux = useSelector((state) => state.elevi);
   const [elevi, setElevi] = useState([]);
-  const [selectedValue, setSelectedValue] = useState("neconfirmat");
   const dispatch = useDispatch();
   const plati = useSelector((state) => state.plati);
 
@@ -49,22 +48,43 @@ export const CustomFormEditor = (props) => {
 
     array.forEach((elev) => {
       if (copyOFPlatiFromDataBase.hasOwnProperty(elev.id))
-        copyOFPlati[elev.id] = copyOFPlatiFromDataBase[elev.id];
-      else
+        copyOFPlati[elev.id] = {
+          ...copyOFPlatiFromDataBase[elev.id],
+          fromDataBase: true,
+        };
+      else if (copyOFPlati[elev.id].starePlata === undefined)
         copyOFPlati[elev.id] = {
           starePlata: "neconfirmat",
-          prezenta: "neconfirmat",
+          fromDataBase: false,
         };
     });
     dispatch(PLATI(copyOFPlati));
   }
 
   useEffect(() => {
-    let array = props
-      ?.valueGetter("ElevID")
-      ?.map((elev) =>
-        eleviFromRedux.find((elevRedux) => elevRedux.id === elev)
-      );
+    let array = props?.valueGetter("ElevID")?.map((elev) => {
+      const ele = eleviFromRedux.find((elevRedux) => elevRedux.id === elev);
+      let restanta = 0;
+      ele.meditatii.forEach((meditatie) => {
+        restanta = meditatie.sedinte
+          .filter((sedinta) => sedinta.starePlata === "neplatit")
+          .reduce(
+            (total, currentValue) => total + parseInt(currentValue.Pret),
+            0
+          );
+      });
+
+      return {
+        ...eleviFromRedux.find((elevRedux) => elevRedux.id === elev),
+        restanta: restanta,
+        options: [
+          { label: "Plata Cash", value: "cash" },
+          { label: "Plata Cont", value: "cont" },
+          { label: "Absent", value: "absent" },
+          { label: "Restanta", value: "neplatit" },
+        ],
+      };
+    });
 
     if (array === undefined) {
       array = [];
@@ -85,6 +105,34 @@ export const CustomFormEditor = (props) => {
     });
   }, [props.valueGetter("Start")]);
 
+  useEffect(() => {
+    let array = elevi;
+    console.log("intru aici");
+    elevi.forEach((elev, index) => {
+      if (parseInt(elev.cont) >= parseInt(props.valueGetter("Pret"))) {
+        array[index].options = [
+          { label: "Plata Cash", value: "cash" },
+          { label: "Plata Cont", value: "cont" },
+          { label: "Absent", value: "absent" },
+          { label: "Restanta", value: "neplatit" },
+        ];
+        let copyOFPlati = { ...plati };
+        if (copyOFPlati[elev.id]?.fromDataBase === false)
+          copyOFPlati[elev.id] = {
+            starePlata: "cont",
+          };
+        console.log(copyOFPlati);
+        dispatch(PLATI(copyOFPlati));
+        console.log("if");
+      } else
+        array[index].options = [
+          { label: "Plata Cash", value: "cash" },
+          { label: "Absent", value: "absent" },
+          { label: "Restanta", value: "neplatit" },
+        ];
+    });
+  }, [elevi, props.valueGetter("Pret")]);
+  console.log({ plati });
   return (
     <FormElement horizontal={true}>
       <div className="k-form-field">
@@ -107,7 +155,7 @@ export const CustomFormEditor = (props) => {
         </div>
       </div>
       <div className="k-form-field">
-        <Label>Plata si Prezenta</Label>
+        <Label>Status</Label>
         <div
           style={{
             display: "inline-block",
@@ -122,38 +170,26 @@ export const CustomFormEditor = (props) => {
                 <div style={{ display: "block" }}>
                   <div style={{ fontWeight: "bold" }}>
                     {index + 1}. {elev.text}
+                    <br />
+                    Cont: {elev.cont}
+                    <br />
+                    Restante : {-elev.restanta}
                   </div>
 
                   <RadioGroup
                     layout="horizontal"
                     data={[
-                      { label: "Neconfirmat", value: "neconfirmat" },
-                      { label: "Platit", value: "platit" },
-                      { label: "Neplatit", value: "neplatit" },
+                      { label: "Plata Cash", value: "cash" },
+                      { label: "Plata Cont", value: "cont" },
+                      { label: "Absent", value: "absent" },
+                      { label: "Restanta", value: "neplatit" },
                     ]}
                     value={plati[elev.id]?.starePlata}
                     onChange={(e) => {
                       let copyOFPlati = { ...plati };
                       copyOFPlati[elev.id] = {
                         starePlata: e.value,
-                        prezenta: plati[elev.id]?.prezenta,
-                      };
-                      dispatch(PLATI(copyOFPlati));
-                    }}
-                  />
-                  <RadioGroup
-                    layout="horizontal"
-                    data={[
-                      { label: "Neconfirmat", value: "neconfirmat" },
-                      { label: "Prezent", value: "Prezent" },
-                      { label: "Absent", value: "Absent" },
-                    ]}
-                    value={plati[elev.id]?.prezenta}
-                    onChange={(e) => {
-                      let copyOFPlati = { ...plati };
-                      copyOFPlati[elev.id] = {
-                        starePlata: plati[elev.id]?.starePlata,
-                        prezenta: e.value,
+                        fromDataBase: false,
                       };
                       dispatch(PLATI(copyOFPlati));
                     }}
