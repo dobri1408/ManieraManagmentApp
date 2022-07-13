@@ -32,7 +32,7 @@ export const CustomFormEditor = (props) => {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   async function getDataOfSedinta(array) {
-    let copyOFPlati = {};
+    let copyOFPlati = { ...plati };
     let copyOFPlatiFromDataBase = {};
 
     const Start = props?.valueGetter("Start");
@@ -52,16 +52,57 @@ export const CustomFormEditor = (props) => {
           ...copyOFPlatiFromDataBase[elev.id],
           fromDataBase: true,
         };
-      else if (copyOFPlati[elev.id].starePlata === undefined)
+      else if (copyOFPlati[elev.id]?.starePlata === undefined)
         copyOFPlati[elev.id] = {
           starePlata: "neconfirmat",
           fromDataBase: false,
         };
     });
-    dispatch(PLATI(copyOFPlati));
+    console.log("get data", copyOFPlati);
+    console.log({ elevi });
+    array.forEach((elev, index) => {
+      console.log("intru aici");
+      if (parseInt(elev.cont) >= parseInt(props.valueGetter("Pret"))) {
+        array[index].options = [
+          { label: "Plata Cash", value: "cash" },
+          { label: "Plata Cont", value: "cont" },
+          { label: "Absent", value: "absent" },
+          { label: "Restanta", value: "neplatit" },
+        ];
+
+        if (
+          copyOFPlati[elev.id]?.fromDataBase === false ||
+          copyOFPlati[elev.id] === undefined
+        ) {
+          copyOFPlati[elev.id] = {
+            starePlata: "cont",
+            fromDataBase: false,
+          };
+        }
+      } else
+        array[index].options = [
+          { label: "Plata Cash", value: "cash" },
+          { label: "Absent", value: "absent" },
+          { label: "Restanta", value: "neplatit" },
+        ];
+    });
+    dispatch(PLATI({ ...copyOFPlati }));
+    setElevi([...array]);
   }
 
   useEffect(() => {
+    if (props === undefined) return;
+    let date = new Date(props.valueGetter("Start"));
+    date.setHours(date.getHours() + 2);
+    props.onChange("End", {
+      value: date,
+    });
+  }, [props.valueGetter("Start")]);
+  console.log(plati);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    dispatch(PLATI({}));
     let array = props?.valueGetter("ElevID")?.map((elev) => {
       const ele = eleviFromRedux.find((elevRedux) => elevRedux.id === elev);
       let restanta = 0;
@@ -92,47 +133,8 @@ export const CustomFormEditor = (props) => {
     } else {
       getDataOfSedinta(array);
     }
+  }, [props.valueGetter("Pret"), props.valueGetter("ElevID")]);
 
-    setElevi([...array]);
-  }, [eleviFromRedux, props?.valueGetter("ElevID")]);
-
-  useEffect(() => {
-    if (props === undefined) return;
-    let date = new Date(props.valueGetter("Start"));
-    date.setHours(date.getHours() + 2);
-    props.onChange("End", {
-      value: date,
-    });
-  }, [props.valueGetter("Start")]);
-
-  useEffect(() => {
-    let array = elevi;
-    console.log("intru aici");
-    elevi.forEach((elev, index) => {
-      if (parseInt(elev.cont) >= parseInt(props.valueGetter("Pret"))) {
-        array[index].options = [
-          { label: "Plata Cash", value: "cash" },
-          { label: "Plata Cont", value: "cont" },
-          { label: "Absent", value: "absent" },
-          { label: "Restanta", value: "neplatit" },
-        ];
-        let copyOFPlati = { ...plati };
-        if (copyOFPlati[elev.id]?.fromDataBase === false)
-          copyOFPlati[elev.id] = {
-            starePlata: "cont",
-          };
-        console.log(copyOFPlati);
-        dispatch(PLATI(copyOFPlati));
-        console.log("if");
-      } else
-        array[index].options = [
-          { label: "Plata Cash", value: "cash" },
-          { label: "Absent", value: "absent" },
-          { label: "Restanta", value: "neplatit" },
-        ];
-    });
-  }, [elevi, props.valueGetter("Pret")]);
-  console.log({ plati });
   return (
     <FormElement horizontal={true}>
       <div className="k-form-field">
@@ -178,12 +180,7 @@ export const CustomFormEditor = (props) => {
 
                   <RadioGroup
                     layout="horizontal"
-                    data={[
-                      { label: "Plata Cash", value: "cash" },
-                      { label: "Plata Cont", value: "cont" },
-                      { label: "Absent", value: "absent" },
-                      { label: "Restanta", value: "neplatit" },
-                    ]}
+                    data={elev.options}
                     value={plati[elev.id]?.starePlata}
                     onChange={(e) => {
                       let copyOFPlati = { ...plati };
