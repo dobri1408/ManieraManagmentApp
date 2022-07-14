@@ -31,6 +31,9 @@ export const CustomFormEditor = (props) => {
   const plati = useSelector((state) => state.plati);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    dispatch(PLATI({}));
+  }, []);
   async function getDataOfSedinta(array) {
     let copyOFPlati = { ...plati };
     let copyOFPlatiFromDataBase = {};
@@ -47,16 +50,21 @@ export const CustomFormEditor = (props) => {
     }
 
     array.forEach((elev) => {
-      if (copyOFPlatiFromDataBase.hasOwnProperty(elev.id))
+      if (copyOFPlatiFromDataBase.hasOwnProperty(elev.id)) {
         copyOFPlati[elev.id] = {
           ...copyOFPlatiFromDataBase[elev.id],
           fromDataBase: true,
         };
-      else if (copyOFPlati[elev.id]?.starePlata === undefined)
-        copyOFPlati[elev.id] = {
-          starePlata: "neconfirmat",
-          fromDataBase: false,
-        };
+        console.log("what");
+      } else {
+        copyOFPlati[elev.id] = { fromDataBase: false };
+
+        if (copyOFPlati[elev.id]?.starePlata === undefined)
+          copyOFPlati[elev.id] = {
+            starePlata: "neconfirmat",
+            fromDataBase: false,
+          };
+      }
     });
     console.log("get data", copyOFPlati);
     console.log({ elevi });
@@ -135,6 +143,20 @@ export const CustomFormEditor = (props) => {
     }
   }, [props.valueGetter("Pret"), props.valueGetter("ElevID")]);
 
+  const data = (elev) => {
+    console.log(plati);
+    if (plati[elev.id]?.fromDataBase === true)
+      return [
+        {
+          label: plati[elev.id].starePlata,
+          value: plati[elev.id].starePlata,
+        },
+      ];
+    else return elev.options;
+  };
+  const disabled = (elev) => {
+    return plati[elev.id]?.fromDataBase === true;
+  };
   return (
     <FormElement horizontal={true}>
       <div className="k-form-field">
@@ -180,8 +202,9 @@ export const CustomFormEditor = (props) => {
 
                   <RadioGroup
                     layout="horizontal"
-                    data={elev.options}
+                    data={data(elev)}
                     value={plati[elev.id]?.starePlata}
+                    disabled={disabled(elev)}
                     onChange={(e) => {
                       let copyOFPlati = { ...plati };
                       copyOFPlati[elev.id] = {

@@ -27,11 +27,13 @@ import timeZoneNames from "cldr-dates-full/main/es/timeZoneNames.json";
 import { MultiSelect } from "@progress/kendo-react-dropdowns";
 import { db } from "../../firebase/firebase";
 import { getElevi } from "../../redux/actions";
+
 import {
   doc,
   setDoc,
   getDocs,
   collection,
+  updateDoc,
   deleteDoc,
 } from "firebase/firestore";
 import "@progress/kendo-date-math/tz/Europe/Bucharest";
@@ -39,6 +41,9 @@ import { getRandomColor } from "../../utils/utils";
 import esMessages from "./es.json";
 import { useSelector, useDispatch } from "react-redux";
 import { sampleDataWithCustomSchema } from "./events-utc.js";
+import { testSlice } from "../../redux/store";
+const { actions } = testSlice;
+const { PLATI } = actions;
 load(
   likelySubtags,
   currencyData,
@@ -184,7 +189,7 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
         else if (meditatie.RecurrenceRule.includes("WEEKLY"))
           frecventa += " zile";
       }
-
+      let cont = parseInt(elev.cont);
       if (
         meditatiiOfElev.find(
           (meditatieOfElev) => meditatieOfElev.TaskID === meditatie.TaskID
@@ -193,19 +198,45 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
         //CREARE MEDITATIE NOUA
 
         const sedinte = [];
+
         if (meditatie.Efectuata) {
           sedinte.push({
             Start: meditatie.Start,
             TaskID: id + Date.parse(meditatie.Start),
-            prezenta: plati[elev.id].prezenta,
             starePlata: plati[elev.id].starePlata,
             Pret: meditatie.Pret,
             sedintaID: actuallyTheGodID,
           });
+          if (plati[elev.id].starePlata === "cont") {
+            cont -= parseInt(meditatie.Pret);
+          }
         }
+        console.log("1", cont);
+        console.log(
+          JSON.stringify({
+            ...elev,
+            cont,
+            meditatii: [
+              ...meditatiiOfElev,
+              {
+                TaskID: meditatie.TaskID,
+                grupa: grupaDeElevi,
+                profesor: profesorDeLaMedite,
+                pretPerSedinta: meditatie.Pret,
+                materie: meditatie.MateriiIDs,
+                Start: meditatie.Start,
+                END: meditatie.End,
+                seMaiTine: true,
+                frecventa: frecventa,
+                sedinte: sedinte,
+              },
+            ],
+          })
+        );
 
         await setDoc(doc(db, "elevi", elev.id), {
           ...elev,
+          cont,
           meditatii: [
             ...meditatiiOfElev,
             {
@@ -232,7 +263,7 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
         const sedintaObject = {
           Start: meditatie.Start,
           TaskID: id + Date.parse(meditatie.Start),
-          prezenta: plati[elev.id].prezenta,
+
           starePlata: plati[elev.id].starePlata,
           Pret: meditatie.Pret,
           sedintaID: actuallyTheGodID,
@@ -246,10 +277,23 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
         if (indexSedinta === -1) {
           if (meditatiiOfElev[index]?.sedinte?.length > 0)
             sedinte = [...meditatiiOfElev[index].sedinte];
-          if (meditatie.Efectuata) sedinte.push(sedintaObject);
+          if (meditatie.Efectuata) {
+            sedinte.push(sedintaObject);
+            if (plati[elev.id].starePlata === "cont") {
+              cont -= parseInt(meditatie.Pret);
+              console.log("coc", cont);
+            }
+          }
+          console.log("2", cont);
         } else {
           sedinte = [...meditatiiOfElev[index].sedinte];
-          if (meditatie.Efectuata) sedinte[indexSedinta] = sedintaObject;
+          if (meditatie.Efectuata) {
+            sedinte[indexSedinta] = sedintaObject;
+            if (plati[elev.id].starePlata === "cont") {
+              cont -= parseInt(meditatie.Pret);
+            }
+            console.log("3", cont);
+          }
         }
 
         meditatiiOfElev[index] = {
@@ -264,13 +308,24 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
           frecventa: frecventa,
           sedinte: sedinte,
         };
+        console.log(
+          JSON.stringify({
+            ...elev,
+            cont: cont,
+            meditatii: [...meditatiiOfElev],
+          })
+        );
+
+        console.log(elev, cont, [...meditatiiOfElev]);
         await setDoc(doc(db, "elevi", elev.id), {
           ...elev,
+          cont: cont,
           meditatii: [...meditatiiOfElev],
         });
       }
     });
     dispatch(getElevi());
+    dispatch(PLATI({}));
   }
   React.useLayoutEffect(() => {
     if (date === undefined || view === undefined) return;
