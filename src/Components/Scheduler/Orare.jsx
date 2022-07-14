@@ -42,6 +42,7 @@ import esMessages from "./es.json";
 import { useSelector, useDispatch } from "react-redux";
 import { sampleDataWithCustomSchema } from "./events-utc.js";
 import { testSlice } from "../../redux/store";
+import { isFulfilled } from "@reduxjs/toolkit";
 const { actions } = testSlice;
 const { PLATI } = actions;
 load(
@@ -99,6 +100,9 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
   const eleviFromRedux = useSelector((state) => state.elevi);
   const profesoriFromRedux = useSelector((state) => state.profesori);
   const plati = useSelector((state) => state.plati);
+  const ref = React.useRef(
+    document?.getElementsByClassName("k-window-content k-dialog-content")
+  );
   const dispatch = useDispatch();
 
   const divs = React.useRef(
@@ -127,6 +131,23 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
       setSelectedProfesori([]);
     }
   }, [sali, orarPrincipal, orientare.tip, orientare.text]);
+
+  React.useEffect(() => {
+    let elements = document?.getElementsByClassName(
+      "k-window-contnet k-dialog-content"
+    );
+    console.log("se afl;a ");
+    console.log(elements);
+    if (elements?.length > 0) {
+      let element = elements[1];
+      if (
+        element.innerHTML ===
+        "Do you want to edit only this event occurrence or the whole series?"
+      )
+        element.innerHTML =
+          "Vrei sa modifici/confirmi sedinta sau sa modifici toata seria de meditatii";
+    }
+  }, [ref.current]);
   async function addMeditatieToDatabase(meditatie, plati) {
     let id = meditatie.TaskID;
     if (
