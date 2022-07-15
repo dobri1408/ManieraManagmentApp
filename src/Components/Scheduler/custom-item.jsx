@@ -14,10 +14,10 @@ export const EditItemWithDynamicTitle = (props) => {
     let elements = document?.getElementsByClassName(
       "k-window-content k-dialog-content"
     );
-    console.log(elements);
+
     if (elements?.length > 0) {
       let element = elements[0];
-      console.log(element.innerHTML);
+
       if (
         element.innerHTML ===
         "Do you want to edit only this event occurrence or the whole series?"
@@ -26,7 +26,7 @@ export const EditItemWithDynamicTitle = (props) => {
           "Vrei sa modifici/confirmi sedinta sau sa modifici toata seria de meditatii";
     }
     let elementss = document?.getElementsByClassName("k-button-text");
-    console.log({ elementss });
+
     if (elementss && elementss?.length > 0) {
       let n = elementss?.length;
       for (let i = 0; i < n; i++) {
@@ -48,10 +48,9 @@ export const EditItemWithDynamicTitle = (props) => {
           "k-window-content k-dialog-content"
         );
         setIdk(idk + 1);
-        console.log(elements);
+
         if (elements?.length > 0) {
           let element = elements[0];
-          console.log(element.innerHTML);
           if (
             element.innerHTML ===
             "Do you want to edit only this event occurrence or the whole series?"

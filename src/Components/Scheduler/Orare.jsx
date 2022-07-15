@@ -136,8 +136,7 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
     let elements = document?.getElementsByClassName(
       "k-window-contnet k-dialog-content"
     );
-    console.log("se afl;a ");
-    console.log(elements);
+
     if (elements?.length > 0) {
       let element = elements[1];
       if (
@@ -177,16 +176,16 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
     const grupaDeElevi = meditatie.ElevID.map(
       (elevID) => eleviFromRedux.find((elev) => elev.id === elevID)?.text
     );
-
-    await setDoc(
-      doc(db, "sedinte", id + Date.parse(meditatie.Start)),
-      {
-        Start: meditatie.Start,
-        TaskID: id + Date.parse(meditatie.Start),
-        plati: plati,
-      },
-      { merge: true }
-    );
+    if (meditatie.Efectuata)
+      await setDoc(
+        doc(db, "sedinte", id + Date.parse(meditatie.Start)),
+        {
+          Start: meditatie.Start,
+          TaskID: id + Date.parse(meditatie.Start),
+          plati: plati,
+        },
+        { merge: true }
+      );
 
     let actuallyTheGodID = meditatie.TaskID;
     if (meditatie.RecurrenceID) meditatie.TaskID = meditatie.RecurrenceID;
@@ -217,9 +216,7 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
         ) === undefined
       ) {
         //CREARE MEDITATIE NOUA
-
         const sedinte = [];
-
         if (meditatie.Efectuata) {
           sedinte.push({
             Start: meditatie.Start,
@@ -232,29 +229,7 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
             cont -= parseInt(meditatie.Pret);
           }
         }
-        console.log("1", cont);
-        console.log(
-          JSON.stringify({
-            ...elev,
-            cont,
-            meditatii: [
-              ...meditatiiOfElev,
-              {
-                TaskID: meditatie.TaskID,
-                grupa: grupaDeElevi,
-                profesor: profesorDeLaMedite,
-                pretPerSedinta: meditatie.Pret,
-                materie: meditatie.MateriiIDs,
-                Start: meditatie.Start,
-                END: meditatie.End,
-                seMaiTine: true,
-                frecventa: frecventa,
-                sedinte: sedinte,
-              },
-            ],
-          })
-        );
-
+        console.log({ sedinte });
         await setDoc(doc(db, "elevi", elev.id), {
           ...elev,
           cont,
@@ -302,10 +277,8 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
             sedinte.push(sedintaObject);
             if (plati[elev.id].starePlata === "cont") {
               cont -= parseInt(meditatie.Pret);
-              console.log("coc", cont);
             }
           }
-          console.log("2", cont);
         } else {
           sedinte = [...meditatiiOfElev[index].sedinte];
           if (meditatie.Efectuata) {
@@ -313,9 +286,9 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
             if (plati[elev.id].starePlata === "cont") {
               cont -= parseInt(meditatie.Pret);
             }
-            console.log("3", cont);
           }
         }
+        console.log({ sedinte });
 
         meditatiiOfElev[index] = {
           TaskID: meditatie.TaskID,
@@ -329,19 +302,10 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
           frecventa: frecventa,
           sedinte: sedinte,
         };
-        console.log(
-          JSON.stringify({
-            ...elev,
-            cont: cont,
-            meditatii: [...meditatiiOfElev],
-          })
-        );
-
-        console.log(elev, cont, [...meditatiiOfElev]);
         await setDoc(doc(db, "elevi", elev.id), {
           ...elev,
-          cont: cont,
-          meditatii: [...meditatiiOfElev],
+          cont,
+          meditatii: meditatiiOfElev,
         });
       }
     });

@@ -121,15 +121,15 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
                 //e obiect
                 meditatiiOfElev.map((meditatie, index) => {
                   const platite = meditatie.sedinte.filter(
-                    (meditatie) => meditatie.starePlata === "platit"
+                    (meditatie) =>
+                      meditatie.starePlata === "cash" ||
+                      meditatie.starePlata === "cont"
                   );
                   const neplatite = meditatie.sedinte.filter(
-                    (meditatie) =>
-                      meditatie.starePlata === "neplatit" &&
-                      meditatie.prezenta === "Prezent"
+                    (meditatie) => meditatie.starePlata === "neplatit"
                   );
                   const absente = meditatie.sedinte.filter(
-                    (meditatie) => meditatie.prezenta === "Absent"
+                    (meditatie) => meditatie.starePlata === "absent"
                   );
                   return (
                     <>
@@ -234,6 +234,7 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
                             <Table.Row>
                               <Table.HeaderCell>Data</Table.HeaderCell>
                               <Table.HeaderCell>Suma</Table.HeaderCell>
+                              <Table.HeaderCell>Mod</Table.HeaderCell>
                             </Table.Row>
                           </Table.Header>
 
@@ -246,6 +247,9 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
                                   </Table.Cell>
                                   <Table.Cell style={{ color: "green" }}>
                                     {sedinta.Pret}
+                                  </Table.Cell>
+                                  <Table.Cell style={{ color: "green" }}>
+                                    {sedinta.starePlata}
                                   </Table.Cell>
                                 </Table.Row>
                               );

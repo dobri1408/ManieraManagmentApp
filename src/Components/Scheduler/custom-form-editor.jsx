@@ -55,7 +55,6 @@ export const CustomFormEditor = (props) => {
           ...copyOFPlatiFromDataBase[elev.id],
           fromDataBase: true,
         };
-        console.log("what");
       } else {
         copyOFPlati[elev.id] = { fromDataBase: false };
 
@@ -66,10 +65,8 @@ export const CustomFormEditor = (props) => {
           };
       }
     });
-    console.log("get data", copyOFPlati);
-    console.log({ elevi });
+
     array.forEach((elev, index) => {
-      console.log("intru aici");
       if (parseInt(elev.cont) >= parseInt(props.valueGetter("Pret"))) {
         array[index].options = [
           { label: "Plata Cash", value: "cash" },
@@ -106,7 +103,6 @@ export const CustomFormEditor = (props) => {
       value: date,
     });
   }, [props.valueGetter("Start")]);
-  console.log(plati);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -144,7 +140,6 @@ export const CustomFormEditor = (props) => {
   }, [props.valueGetter("Pret"), props.valueGetter("ElevID")]);
 
   const data = (elev) => {
-    console.log(plati);
     if (plati[elev.id]?.fromDataBase === true)
       return [
         {

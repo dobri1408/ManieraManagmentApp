@@ -39,9 +39,6 @@ function PlatiElev() {
 
   const platesteCash = React.useCallback(
     async (dataItem) => {
-      console.log("intru aiciciici");
-      //sedinte database
-      console.log(dataItem.sedintaID);
       let docRef = doc(
         db,
         "sedinte",
@@ -49,7 +46,7 @@ function PlatiElev() {
       );
       let docSnap = await getDoc(docRef);
       let plati = docSnap.data().plati;
-      plati[elevData.id].starePlata = "platit";
+      plati[elevData.id].starePlata = "cash";
 
       await updateDoc(docRef, {
         plati: plati,
@@ -66,9 +63,9 @@ function PlatiElev() {
         (sedinta) => sedinta.sedintaID === dataItem.sedintaID
       );
       let index = MeditatieToFind.sedinte.indexOf(sedinta);
-      console.log("DAM IT", indexEL, index);
-      meditatiii[indexEL].sedinte[index].starePlata = "platit";
-      console.log({ meditatiii });
+
+      meditatiii[indexEL].sedinte[index].starePlata = "cash";
+
       await updateDoc(elevRef, {
         meditatii: meditatiii,
       });
@@ -77,7 +74,6 @@ function PlatiElev() {
     [dispatch, elevData?.id, elevData?.meditatii]
   );
   const platesteCard = async (dataItem) => {
-    console.log("intru aiciciici");
     //sedinte database
     let docRef = doc(
       db,
@@ -86,7 +82,7 @@ function PlatiElev() {
     );
     let docSnap = await getDoc(docRef);
     let plati = docSnap.data().plati;
-    plati[elevData.id].starePlata = "platit";
+    plati[elevData.id].starePlata = "cont";
 
     await updateDoc(docRef, {
       plati: plati,
@@ -104,7 +100,7 @@ function PlatiElev() {
     );
     let index = MeditatieToFind.sedinte.indexOf(sedinta);
 
-    meditatiii[indexEL].sedinte[index].starePlata = "platit";
+    meditatiii[indexEL].sedinte[index].starePlata = "cont";
 
     await updateDoc(elevRef, {
       meditatii: [...meditatiii],
@@ -131,7 +127,7 @@ function PlatiElev() {
 
     dispatch(getElevi());
   };
-  console.log(deplatit);
+
   const facturaCell = (props) => {
     return (
       <td
@@ -166,7 +162,6 @@ function PlatiElev() {
   const platesteCashAll = async () => {
     if (selectedSedinte.current.length > 0) {
       const elevRef = doc(db, "elevi", elevData.id);
-      console.log(elevData.id);
 
       let meditatiii = JSON.parse(JSON.stringify(elevData.meditatii));
       selectedSedinte.current.forEach((dataItem) => {
@@ -179,10 +174,10 @@ function PlatiElev() {
           (sedinta) => sedinta.sedintaID === dataItem.sedintaID
         );
         let index = MeditatieToFind.sedinte.indexOf(sedinta);
-        console.log("DAM IT", indexEL, index);
-        meditatiii[indexEL].sedinte[index].starePlata = "platit";
+
+        meditatiii[indexEL].sedinte[index].starePlata = "cash";
       });
-      console.log("asta va pune", meditatiii, meditatiii);
+
       await updateDoc(
         elevRef,
         {
@@ -190,7 +185,7 @@ function PlatiElev() {
         },
         { merge: true }
       );
-      console.log("wtf");
+
       dispatch(getElevi());
       selectedSedinte.current.forEach(async (dataItem) => {
         let docRef = doc(
@@ -200,7 +195,7 @@ function PlatiElev() {
         );
         let docSnap = getDoc(docRef);
         let plati = docSnap.data().plati;
-        plati[elevData.id].starePlata = "platit";
+        plati[elevData.id].starePlata = "cash";
 
         updateDoc(docRef, {
           plati: plati,
@@ -211,7 +206,7 @@ function PlatiElev() {
   const platesteCardAll = async () => {
     if (selectedSedinte.current.length > 0) {
       const elevRef = doc(db, "elevi", elevData.id);
-      console.log(elevData.id);
+
       let total = 0;
       let meditatiii = JSON.parse(JSON.stringify(elevData.meditatii));
       selectedSedinte.current.forEach((dataItem) => {
@@ -224,10 +219,10 @@ function PlatiElev() {
           (sedinta) => sedinta.sedintaID === dataItem.sedintaID
         );
         let index = MeditatieToFind.sedinte.indexOf(sedinta);
-        console.log("DAM IT", indexEL, index);
-        meditatiii[indexEL].sedinte[index].starePlata = "platit";
+
+        meditatiii[indexEL].sedinte[index].starePlata = "cont";
       });
-      console.log("asta va pune", meditatiii, meditatiii);
+
       await updateDoc(
         elevRef,
         {
@@ -235,7 +230,7 @@ function PlatiElev() {
         },
         { merge: true }
       );
-      console.log("wtf");
+
       dispatch(getElevi());
       selectedSedinte.current.forEach(async (dataItem) => {
         let docRef = doc(
@@ -245,7 +240,7 @@ function PlatiElev() {
         );
         let docSnap = getDoc(docRef);
         let plati = docSnap.data().plati;
-        plati[elevData.id].starePlata = "platit";
+        plati[elevData.id].starePlata = "cont";
 
         await updateDoc(docRef, {
           plati: plati,
