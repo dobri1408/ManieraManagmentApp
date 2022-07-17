@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { Grid, GridColumn as Column } from "@progress/kendo-react-grid";
 import { orderBy } from "@progress/kendo-data-query";
 import { platesteFacturaCash } from "../../Components/facturi/platesteCashFactura";
+import { platesteFacturaCard } from "../../Components/facturi/platesteCardFactura";
 import {
   Icon,
   Tab,
@@ -26,7 +27,7 @@ const initialSort = [
   },
 ];
 ///STERGE SELECTEDD ALL DUPA O ACTIUNE BOSS
-
+///O SEDINTA IN MAI MULTE FACturI nu se actualizeaza in toate
 function PlatiElev() {
   const id = useParams();
   const [activeIndex, setActiveIndex] = useState();
@@ -56,7 +57,6 @@ function PlatiElev() {
 
   const platesteFacturaLinkDePlata = () => {};
 
-  const platesteFacturaCard = () => {};
   const paymentMethod = (props) => {
     const style = {
       color: "red",
@@ -621,6 +621,7 @@ function PlatiElev() {
                           style={{ color: "black", width: "15vw" }}
                           onClick={() => {
                             setWichAction("platesteFacturaCard");
+                            setProosForAction(factura);
                             setConfirmationShow(true);
                           }}
                         >
@@ -712,9 +713,10 @@ function PlatiElev() {
             else if (whichAction === "factura") factura();
             else if (whichAction === "platesteFacturaCash") {
               platesteFacturaCash(propsForAction, elevData);
-            } else if (whichAction === "PlatesteFacturaCard")
-              platesteFacturaCard();
-            else if (whichAction === "PlatesteFacturaLinkDePlata")
+            } else if (whichAction === "platesteFacturaCard") {
+              platesteFacturaCard(propsForAction, elevData);
+              console.log("hello");
+            } else if (whichAction === "PlatesteFacturaLinkDePlata")
               platesteFacturaLinkDePlata();
             setConfirmationShow(false);
             selectedSedinte.current = [];
