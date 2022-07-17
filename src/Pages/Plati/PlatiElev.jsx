@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Grid, GridColumn as Column } from "@progress/kendo-react-grid";
-import { filterBy, orderBy } from "@progress/kendo-data-query";
+import { orderBy } from "@progress/kendo-data-query";
+import { platesteFacturaCash } from "../../Components/facturi/platesteCashFactura";
 import {
   Icon,
   Tab,
@@ -12,12 +13,11 @@ import {
   Confirm,
   Accordion,
 } from "semantic-ui-react";
-import { doc, updateDoc, getDoc, setDoc } from "firebase/firestore";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 import "./Plati.css";
 import { getElevi } from "../../redux/actions";
 import { useDispatch } from "react-redux";
-import { arrayRemove } from "firebase/firestore";
 import ModalFactura from "../../Components/ModalFactura";
 const initialSort = [
   {
@@ -54,6 +54,9 @@ function PlatiElev() {
   const [whichAction, setWichAction] = useState("none");
   const [propsForAction, setProosForAction] = useState({});
 
+  const platesteFacturaLinkDePlata = () => {};
+
+  const platesteFacturaCard = () => {};
   const paymentMethod = (props) => {
     const style = {
       color: "red",
@@ -602,14 +605,25 @@ function PlatiElev() {
                           style={{
                             backgroundColor: "#32ba4d",
                             color: "white",
-                            width: "7.9vw",
+                            width: "12vw",
+                          }}
+                          onClick={() => {
+                            setWichAction("platesteFacturaCash");
+                            setProosForAction(factura);
+                            setConfirmationShow(true);
                           }}
                         >
                           <Icon name="money bill" />
-                          Plateste
+                          Plateste CASH
                         </Button>
 
-                        <Button style={{ color: "black", width: "15vw" }}>
+                        <Button
+                          style={{ color: "black", width: "15vw" }}
+                          onClick={() => {
+                            setWichAction("platesteFacturaCard");
+                            setConfirmationShow(true);
+                          }}
+                        >
                           <Icon
                             name="credit card outline"
                             style={{ color: "black" }}
@@ -621,6 +635,10 @@ function PlatiElev() {
                             backgroundColor: "#274653",
                             width: "15vw",
                             color: "white",
+                          }}
+                          onClick={() => {
+                            setWichAction("PlatesteFacturaLinkDePlata");
+                            setConfirmationShow(true);
                           }}
                         >
                           <Icon name="staylinked" />
@@ -692,8 +710,15 @@ function PlatiElev() {
             else if (whichAction === "platesteCashAll") platesteCashAll();
             else if (whichAction === "platesteCardAll") platesteCardAll();
             else if (whichAction === "factura") factura();
+            else if (whichAction === "platesteFacturaCash") {
+              platesteFacturaCash(propsForAction, elevData);
+            } else if (whichAction === "PlatesteFacturaCard")
+              platesteFacturaCard();
+            else if (whichAction === "PlatesteFacturaLinkDePlata")
+              platesteFacturaLinkDePlata();
             setConfirmationShow(false);
             selectedSedinte.current = [];
+            dispatch(getElevi());
           }}
         />
         <h1>{elevData?.text} - Plati</h1>
