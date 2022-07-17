@@ -18,6 +18,7 @@ import "./Plati.css";
 import { getElevi } from "../../redux/actions";
 import { useDispatch } from "react-redux";
 import { arrayRemove } from "firebase/firestore";
+import ModalFactura from "../../Components/ModalFactura";
 const initialSort = [
   {
     field: "materie",
@@ -27,9 +28,10 @@ const initialSort = [
 ///STERGE SELECTEDD ALL DUPA O ACTIUNE BOSS
 
 function PlatiElev() {
-  const elevi = useSelector((state) => state.elevi);
   const id = useParams();
   const [activeIndex, setActiveIndex] = useState();
+  const [open, setOpen] = useState(false);
+  const [dataFactura, setDataFactura] = useState({});
   const handleAccordion = (value) => {
     if (activeIndex === value) {
       setActiveIndex(null);
@@ -66,7 +68,6 @@ function PlatiElev() {
       );
   };
   const ReturnDate = (props) => {
-    console.log(props.dataItem["data"]);
     return (
       <td>
         {new Date(props.dataItem["data"].seconds * 1000).toLocaleDateString()}
@@ -240,7 +241,6 @@ function PlatiElev() {
     }
   };
   const factura = async () => {
-    console.log("inbtru");
     if (selectedSedinte.current.length > 0) {
       const elevRef = doc(db, "elevi", elevData.id);
       let facturi = JSON.parse(JSON.stringify(elevData.facturi || []));
@@ -590,6 +590,10 @@ function PlatiElev() {
                             color: "black",
                             width: "15vw",
                           }}
+                          onClick={() => {
+                            setOpen(true);
+                            setDataFactura(factura);
+                          }}
                         >
                           <Icon name="download" /> Descarca Factura
                         </Button>
@@ -758,6 +762,12 @@ function PlatiElev() {
 
       <br />
       <Tab panes={panes} />
+      <ModalFactura
+        open={open}
+        setOpen={setOpen}
+        dataFactura={dataFactura}
+        elev={elevData}
+      />
     </>
   );
 }

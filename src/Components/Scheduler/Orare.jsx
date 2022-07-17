@@ -229,7 +229,7 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
             cont -= parseInt(meditatie.Pret);
           }
         }
-        console.log({ sedinte });
+
         await setDoc(doc(db, "elevi", elev.id), {
           ...elev,
           cont,
@@ -288,7 +288,6 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
             }
           }
         }
-        console.log({ sedinte });
 
         meditatiiOfElev[index] = {
           TaskID: meditatie.TaskID,

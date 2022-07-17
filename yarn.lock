@@ -1980,6 +1980,11 @@
   dependencies:
     "@progress/pako-esm" "^1.0.1"
 
+"@progress/kendo-file-saver@^1.0.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@progress/kendo-file-saver/-/kendo-file-saver-1.1.1.tgz#4225affb7064fe9e12d3a89f36e00ab6c92deef0"
+  integrity sha512-mo0Cw3MLoLcx2bA+Ma/VAxkM9vHSJ4Sg0vgh6U1ZIvPXmnfO8Dgsdiv/475lafyju0kG8KOhl3bcVagCF71glQ==
+
 "@progress/kendo-licensing@latest":
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/@progress/kendo-licensing/-/kendo-licensing-1.2.2.tgz#25df2ac4eac7940f7ed64c6c44940285a40bedb6"
@@ -2106,6 +2111,13 @@
   dependencies:
     "@progress/kendo-react-common" "5.4.0"
     prop-types "^15.6.0"
+
+"@progress/kendo-react-pdf@^5.5.0":
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/@progress/kendo-react-pdf/-/kendo-react-pdf-5.5.0.tgz#c0738c073d2ca0da09ae51d00dc981918982e4f3"
+  integrity sha512-UxAkj9kJw45c87nQH8mrltxCGIudumhyGt0dWcBlVTh+5yjG2eNW5f4vrPXHk2yClOlFJUfXtrrpjQuZZUYhbA==
+  dependencies:
+    "@progress/kendo-file-saver" "^1.0.1"
 
 "@progress/kendo-react-popup@5.4.0":
   version "5.4.0"

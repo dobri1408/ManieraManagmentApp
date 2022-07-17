@@ -17,6 +17,7 @@
     "@progress/kendo-react-grid": "^5.5.0",
     "@progress/kendo-react-inputs": "latest",
     "@progress/kendo-react-intl": "latest",
+    "@progress/kendo-react-pdf": "^5.5.0",
     "@progress/kendo-react-popup": "latest",
     "@progress/kendo-react-scheduler": "latest",
     "@progress/kendo-react-treeview": "latest",
