@@ -28,6 +28,15 @@ function AddElev({
   localitateDefault = "",
   clasaDefault = "",
   meditatiiDefault = [],
+  numeFacturaDefault = "",
+  serieBuletinFacturaDefault = "",
+  orasFacturaDefault = "",
+  stradaFacturaDefault = "",
+  numarBuletinFacturaDefault = "",
+  numarAdresaFacturaDefault = "",
+  blocFacturaDefault = "",
+  apartamentFacturaDefault = "",
+  judetFacturaDefault = "",
   contDefault = 0,
   id = "",
 }) {
@@ -41,9 +50,27 @@ function AddElev({
   const [luna, setLuna] = useState(lunaDefault);
   const [localitatea, setLocalitatea] = useState(localitateDefault);
   const [clasa, setClasa] = useState(clasaDefault);
+  const [numeFactura, setNumeFactura] = useState(numeFacturaDefault);
   const meditatii = new Map(Object.entries(pregatiriDefault));
   const Materii = useSelector((state) => state.materii);
   const profesori = useSelector((state) => state.profesori);
+  const [serieBuletinFactura, setSerieBuletinFactura] = useState(
+    serieBuletinFacturaDefault
+  );
+  const [orasFactura, setOrasFactura] = useState(orasFacturaDefault);
+  const [stradaFactura, setStradaFactura] = useState(stradaFacturaDefault);
+  const [numarBuletinFactura, setNumarBuletinFactura] = useState(
+    numarBuletinFacturaDefault
+  );
+  const [numarAdresaFactura, setNumarAdresaFactura] = useState(
+    numarAdresaFacturaDefault
+  );
+  const [blocFactura, setBlocFactura] = useState(blocFacturaDefault);
+  const [apartamentFactura, setApartamentFactura] = useState(
+    apartamentFacturaDefault
+  );
+  const [judetFactura, setJudetFactura] = useState(judetFacturaDefault);
+
   const dispatch = useDispatch();
   async function addToDatabase() {
     if (id === "") id = prenume + numeDeFamilie + an + zi + luna;
@@ -59,6 +86,15 @@ function AddElev({
       pregatiri: Object.fromEntries(meditatii),
       meditatii: meditatiiDefault,
       cont: contDefault,
+      numeFactura,
+      serieBuletinFactura,
+      orasFactura,
+      stradaFactura,
+      numarBuletinFactura,
+      numarAdresaFactura,
+      blocFactura,
+      apartamentFactura,
+      judetFactura,
     });
     dispatch(getElevi());
   }
@@ -106,7 +142,6 @@ function AddElev({
             />
           </Form.Field>
           <Divider />
-
           <Form.Field></Form.Field>
           <Divider />
           <Form.Field inline>
@@ -167,110 +202,91 @@ function AddElev({
             />
           </Form.Field>
           <Divider />
-
           <Divider />
-          {
-            // <Form.Field inline>
-            //   <Label pointing="right">Materii</Label>
-            //   <Dropdown
-            //     placeholder="Materii"
-            //     fluid
-            //     multiple
-            //     selection
-            //     value={materii}
-            //     options={Materii.map((materie) => {
-            //       return {
-            //         text: materie.numeMaterie,
-            //         value: materie.numeMaterie,
-            //         key: materie.numeMaterie,
-            //       };
-            //     })}
-            //     onChange={(e, data) => {
-            //       setMaterii(data.value);
-            //     }}
-            //   />
-            // </Form.Field>
-            // <Divider />
-            // <Form.Field inline>
-            //   <Label pointing="right">Detalii Pregatiri</Label>
-            // </Form.Field>
-            // <Form.Field>
-            //   {materii.map((materie) => {
-            //     return (
-            //       <Form.Field>
-            //         <h1>{materie}</h1>
-            //         <Form.Field
-            //           inline
-            //           style={{
-            //             display: "block",
-            //             justifyContent: "center",
-            //             alignItems: "center",
-            //           }}
-            //         >
-            //           <Label>Profesor</Label>
-            //           <Select
-            //             placeholder="Profesor"
-            //             fluid
-            //             selection
-            //             value={meditatii.get(materie)?.profesor}
-            //             onChange={(e, data) =>
-            //               meditatii.set(materie, { profesor: data.value })
-            //             }
-            //             options={Materii?.find(
-            //               (el) => el?.numeMaterie === materie
-            //             )?.profesori?.map((profesor) => {
-            //               return {
-            //                 text:
-            //                   profesori?.find((el) => el?.id === profesor)
-            //                     ?.numeDeFamilie +
-            //                   " " +
-            //                   profesori?.find((el) => el?.id === profesor)
-            //                     ?.prenume,
-            //                 value:
-            //                   profesori?.find((el) => el?.id === profesor)
-            //                     ?.numeDeFamilie +
-            //                   " " +
-            //                   profesori?.find((el) => el?.id === profesor)
-            //                     ?.prenume,
-            //                 key:
-            //                   profesori?.find((el) => el?.id === profesor)
-            //                     ?.numeDeFamilie +
-            //                   " " +
-            //                   profesori?.find((el) => el?.id === profesor)
-            //                     ?.prenume,
-            //               };
-            //             })}
-            //           />
-            //           <Label>Tip Plata</Label>
-            //           <Select
-            //             placeholder="Tip Plata"
-            //             fluid
-            //             value={meditatii.get(materie)?.plata}
-            //             onChange={(e, data) => {
-            //               meditatii.set(materie, {
-            //                 ...meditatii.get(materie),
-            //                 plata: data.value,
-            //               });
-            //             }}
-            //             options={[
-            //               {
-            //                 key: "abonament",
-            //                 text: "Abonament 4",
-            //                 value: "abonament",
-            //               },
-            //               {
-            //                 key: "persedinta",
-            //                 text: "Plata per sedinta",
-            //                 value: "Plata per sedinta",
-            //               },
-            //             ]}
-            //           />
-            //         </Form.Field>
-            //       </>
-            //     );
-            //   })}
-            // </Form.Field>
-          }
+          Facturare
+          <Form.Field inline>
+            <Label>Date personale</Label>
+            <Input
+              type="text"
+              placeholder="Nume"
+              value={numeFactura}
+              onChange={(e) => {
+                setNumeFactura(e.target.value);
+              }}
+            />
+            <Input
+              type="text"
+              placeholder="Serie"
+              value={serieBuletinFactura}
+              onChange={(e) => {
+                setSerieBuletinFactura(e.target.value);
+              }}
+            />
+            <Input
+              type="text"
+              placeholder="Numar Buletin"
+              value={numarBuletinFactura}
+              onChange={(e) => {
+                setNumarBuletinFactura(e.target.value);
+              }}
+            />
+          </Form.Field>
+          <Divider />
+          <Form.Field></Form.Field>
+          <Divider />
+          <Form.Field inline>
+            <Label>Adresa Facturare</Label>
+            <Input
+              type="text"
+              value={orasFactura}
+              placeholder="Oras"
+              onChange={(e) => {
+                setOrasFactura(e.target.value);
+              }}
+            />
+            <Input
+              type="text"
+              placeholder="Strada"
+              value={stradaFactura}
+              onChange={(e) => {
+                setStradaFactura(e.target.value);
+              }}
+            />
+            <Input
+              type="text"
+              placeholder="numar"
+              value={numarAdresaFactura}
+              onChange={(e) => {
+                setNumarAdresaFactura(e.target.value);
+              }}
+            />
+            <Input
+              type="text"
+              placeholder="Bloc"
+              value={blocFactura}
+              onChange={(e) => {
+                if (e.target.value === "-") setApartamentFactura("");
+                setBlocFactura(e.target.value);
+              }}
+            />
+            <Input
+              type="text"
+              placeholder="Apartament"
+              value={apartamentFactura}
+              onChange={(e) => {
+                if (e.target.value === "-") setApartamentFactura("");
+                setApartamentFactura(e.target.value);
+              }}
+            />
+            <Input
+              type="text"
+              placeholder="Judet"
+              value={judetFactura}
+              onChange={(e) => {
+                setJudetFactura(e.target.value);
+              }}
+            />
+          </Form.Field>
         </Form>
       </Modal.Content>
       <Modal.Actions>

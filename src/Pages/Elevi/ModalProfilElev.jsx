@@ -90,6 +90,15 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
         clasaDefault={studentData?.clasa}
         meditatiiDefault={studentData?.meditatii}
         contDefault={studentData?.cont}
+        numeFacturaDefault={studentData?.numeFactura}
+        serieBuletinFacturaDefault={studentData?.serieBuletinFactura}
+        orasFacturaDefault={studentData?.orasFactura}
+        stradaFacturaDefault={studentData?.stradaFactura}
+        numarBuletinFacturaDefault={studentData?.numarBuletinFactura}
+        numarAdresaFacturaDefault={studentData?.numarAdresaFactura}
+        blocFacturaDefault={studentData?.blocFactura}
+        apartamentFacturaDefault={studentData?.apartamentFactura}
+        judetFacturaDefault={studentData?.judetFactura}
       />
       <Modal.Header>Detalii Elev</Modal.Header>
       <Modal.Content image scrolling>
@@ -112,6 +121,33 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
                 Liceu: {studentData?.liceu + " " + studentData?.localitatea}
               </li>
               <li>Clasa: {studentData?.clasa}</li>
+            </ul>
+          </div>
+          <h6>Date Facturare</h6>
+          <div style={{ paddingLeft: "4vw" }}>
+            <ul>
+              <li>Nume {studentData?.numeFactura}</li>
+              <li>
+                Serie Buletin+Numar:{" "}
+                {studentData?.serieBuletinFactura +
+                  " " +
+                  studentData?.numarBuletinFactura}
+              </li>
+              <li>
+                Adresa:{" "}
+                {"oras " +
+                  studentData?.orasFactura +
+                  ", " +
+                  studentData?.stradaFactura +
+                  ", " +
+                  studentData?.numarAdresaFactura +
+                  ", Bloc: " +
+                  studentData?.blocFactura +
+                  ", Apart:" +
+                  studentData?.apartamentFactura +
+                  ", " +
+                  studentData?.judetFactura}{" "}
+              </li>
             </ul>
           </div>
           <h6>Pregatiri in cadrul Maniera</h6>

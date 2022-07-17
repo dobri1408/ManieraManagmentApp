@@ -3,7 +3,15 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Grid, GridColumn as Column } from "@progress/kendo-react-grid";
 import { filterBy, orderBy } from "@progress/kendo-data-query";
-import { Icon, Tab, Checkbox, Button, Input, Confirm } from "semantic-ui-react";
+import {
+  Icon,
+  Tab,
+  Checkbox,
+  Button,
+  Input,
+  Confirm,
+  Accordion,
+} from "semantic-ui-react";
 import { doc, updateDoc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 import "./Plati.css";
@@ -21,7 +29,14 @@ const initialSort = [
 function PlatiElev() {
   const elevi = useSelector((state) => state.elevi);
   const id = useParams();
-
+  const [activeIndex, setActiveIndex] = useState();
+  const handleAccordion = (value) => {
+    if (activeIndex === value) {
+      setActiveIndex(null);
+      return;
+    }
+    setActiveIndex(value);
+  };
   const elevData = useSelector((state) =>
     state.elevi.find((elev) => elev.id === id.id)
   );
@@ -37,6 +52,27 @@ function PlatiElev() {
   const [whichAction, setWichAction] = useState("none");
   const [propsForAction, setProosForAction] = useState({});
 
+  const paymentMethod = (props) => {
+    const style = {
+      color: "red",
+    };
+    if (props.dataItem["starePlata"] === "neplatit")
+      return <td style={style}>{props.dataItem["Pret"]}</td>;
+    else
+      return (
+        <td style={{ color: "green" }}>
+          {props.dataItem["Pret"]}(A fost platita)
+        </td>
+      );
+  };
+  const ReturnDate = (props) => {
+    console.log(props.dataItem["data"]);
+    return (
+      <td>
+        {new Date(props.dataItem["data"].seconds * 1000).toLocaleDateString()}
+      </td>
+    );
+  };
   const platesteCash = React.useCallback(
     async (dataItem) => {
       let docRef = doc(
@@ -200,6 +236,36 @@ function PlatiElev() {
         updateDoc(docRef, {
           plati: plati,
         });
+      });
+    }
+  };
+  const factura = async () => {
+    console.log("inbtru");
+    if (selectedSedinte.current.length > 0) {
+      const elevRef = doc(db, "elevi", elevData.id);
+      let facturi = JSON.parse(JSON.stringify(elevData.facturi || []));
+      let today = new Date();
+      let date =
+        today.getFullYear() +
+        "-" +
+        (today.getMonth() + 1) +
+        "-" +
+        today.getDate();
+      let scadenta = new Date();
+      scadenta.setDate(today.getDate() + 20);
+      let sedinte = [];
+      selectedSedinte.current.forEach((sedinta) => {
+        sedinte.push(sedinta);
+      });
+      let factura = {
+        sedinte: sedinte,
+        dataEmitere: date,
+        scadenta: scadenta,
+        numarFactura: facturi.length + 1,
+      };
+      facturi.push(factura);
+      await updateDoc(elevRef, {
+        facturi: facturi,
       });
     }
   };
@@ -367,6 +433,10 @@ function PlatiElev() {
                     color: "black",
                     width: "11.5vw",
                   }}
+                  onClick={() => {
+                    setWichAction("factura");
+                    setConfirmationShow(true);
+                  }}
                 >
                   <Icon name="file" />
                   Exporta Factura
@@ -470,6 +540,128 @@ function PlatiElev() {
     },
     {
       menuItem: "Facturi",
+      render: () => (
+        <Tab.Pane>
+          <Accordion styled style={{ width: "100%" }}>
+            {
+              //e obiect
+              elevData.facturi.map((factura, index) => {
+                return (
+                  <>
+                    <Accordion.Title
+                      active={activeIndex === index}
+                      index={0}
+                      onClick={() => {
+                        handleAccordion(index);
+                      }}
+                    >
+                      <Icon name="dropdown" />
+                      Factura nr O_{factura.numarFactura} -
+                      <div style={{ color: "#32ba4d", fontWeight: "bold" }}>
+                        Data Emitere: {factura.dataEmitere}
+                      </div>
+                      <div style={{ color: "red" }}>
+                        {"               Total de plata: "}
+
+                        {factura.sedinte
+                          .sort(function (a, b) {
+                            return a.dataEmitere - b.dataEmitere;
+                          })
+                          .reduce((total, sedinta) => {
+                            if (sedinta.starePlata === "neplatit")
+                              return total + parseInt(sedinta.Pret);
+                            else return total;
+                          }, 0)}
+                      </div>
+                      <div>
+                        <div>
+                          Data Scadenta:{" "}
+                          {new Date(
+                            factura?.scadenta.seconds * 1000
+                          ).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </Accordion.Title>
+                    <Accordion.Content active={activeIndex === index}>
+                      <div>
+                        <Button
+                          style={{
+                            backgroundColor: "yellow",
+                            color: "black",
+                            width: "15vw",
+                          }}
+                        >
+                          <Icon name="download" /> Descarca Factura
+                        </Button>
+
+                        <Button
+                          style={{
+                            backgroundColor: "#32ba4d",
+                            color: "white",
+                            width: "7.9vw",
+                          }}
+                        >
+                          <Icon name="money bill" />
+                          Plateste
+                        </Button>
+
+                        <Button style={{ color: "black", width: "15vw" }}>
+                          <Icon
+                            name="credit card outline"
+                            style={{ color: "black" }}
+                          />
+                          Plateste din Cont
+                        </Button>
+                        <Button
+                          style={{
+                            backgroundColor: "#274653",
+                            width: "15vw",
+                            color: "white",
+                          }}
+                        >
+                          <Icon name="staylinked" />
+                          Plateste cu Link de Plata
+                        </Button>
+                      </div>
+                      Sedinte:
+                      <Grid
+                        style={{}}
+                        data={orderBy(factura.sedinte, sort)}
+                        sortable={true}
+                        sort={sort}
+                        onSortChange={(e) => {
+                          setSort(e.sort);
+                        }}
+                      >
+                        <Column field="text" title="Numele Elevului" />
+                        <Column field="data" title="Data" cell={ReturnDate} />
+
+                        <Column
+                          field="materie"
+                          title="Materie"
+                          filterable={false}
+                        />
+                        <Column
+                          field="profesor"
+                          filter="string"
+                          title="Profesor"
+                          filterable={false}
+                        />
+                        <Column
+                          field="Pret"
+                          title="Suma de Platit"
+                          filterable={false}
+                          cell={paymentMethod}
+                        />
+                      </Grid>
+                    </Accordion.Content>
+                  </>
+                );
+              })
+            }
+          </Accordion>
+        </Tab.Pane>
+      ),
     },
   ];
   return (
@@ -495,6 +687,7 @@ function PlatiElev() {
               platesteCard(propsForAction.dataItem);
             else if (whichAction === "platesteCashAll") platesteCashAll();
             else if (whichAction === "platesteCardAll") platesteCardAll();
+            else if (whichAction === "factura") factura();
             setConfirmationShow(false);
             selectedSedinte.current = [];
           }}
