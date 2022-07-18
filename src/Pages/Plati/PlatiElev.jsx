@@ -3,9 +3,11 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Grid, GridColumn as Column } from "@progress/kendo-react-grid";
 import { orderBy } from "@progress/kendo-data-query";
-import { platesteFacturaCash } from "../../Components/facturi/platesteCashFactura";
-import { platesteFacturaCard } from "../../Components/facturi/platesteCardFactura";
-import { getSedintaInfo } from "../../Components/database/getSedintaInfo";
+import { platesteFacturaCash } from "../../Components/database/facturi/platesteCashFactura";
+import { platesteFacturaCard } from "../../Components/database/facturi/platesteCardFactura";
+import { getSedintaInfo } from "../../Components/database/sedinte/getSedintaInfo";
+import { creeazaFactura } from "../../Components/database/facturi/creeazaFactura";
+import { platesteCashSedinte } from "../../Components/database/plati/platesteCashSedinte";
 import {
   Icon,
   Tab,
@@ -44,6 +46,7 @@ function PlatiElev() {
   const elevData = useSelector((state) =>
     state.elevi.find((elev) => elev.id === id.id)
   );
+  console.log({ elevData });
   const [deplatit, setDeplatit] = useState([]);
   const [adauga, setAdauga] = useState(false);
   const [selectedAll, setSelectedAll] = useState(false);
@@ -201,77 +204,11 @@ function PlatiElev() {
     );
   };
   const platesteCashAll = async () => {
-    if (selectedSedinte.current.length > 0) {
-      const elevRef = doc(db, "elevi", elevData.id);
-
-      let meditatiii = JSON.parse(JSON.stringify(elevData.meditatii));
-      selectedSedinte.current.forEach((dataItem) => {
-        let MeditatieToFind = meditatiii.find(
-          (meditatie) => meditatie.TaskID === dataItem.TaskID
-        );
-        let indexEL = meditatiii.indexOf(MeditatieToFind);
-
-        let sedinta = MeditatieToFind.sedinte.find(
-          (sedinta) => sedinta.sedintaID === dataItem.sedintaID
-        );
-        let index = MeditatieToFind.sedinte.indexOf(sedinta);
-
-        meditatiii[indexEL].sedinte[index].starePlata = "cash";
-      });
-
-      await updateDoc(
-        elevRef,
-        {
-          meditatii: meditatiii,
-        },
-        { merge: true }
-      );
-
-      dispatch(getElevi());
-      selectedSedinte.current.forEach(async (dataItem) => {
-        let docRef = doc(
-          db,
-          "sedinte",
-          dataItem.sedintaID + Date.parse(dataItem.data)
-        );
-        let docSnap = getDoc(docRef);
-        let plati = docSnap.data().plati;
-        plati[elevData.id].starePlata = "cash";
-
-        updateDoc(docRef, {
-          plati: plati,
-        });
-      });
-    }
+    await platesteCashSedinte(selectedSedinte, elevData);
+    dispatch(getElevi());
   };
   const factura = async () => {
-    if (selectedSedinte.current.length > 0) {
-      const elevRef = doc(db, "elevi", elevData.id);
-      let facturi = JSON.parse(JSON.stringify(elevData.facturi || []));
-      let today = new Date();
-      let date =
-        today.getFullYear() +
-        "-" +
-        (today.getMonth() + 1) +
-        "-" +
-        today.getDate();
-      let scadenta = new Date();
-      scadenta.setDate(today.getDate() + 20);
-      let sedinte = [];
-      selectedSedinte.current.forEach((sedinta) => {
-        sedinte.push(sedinta);
-      });
-      let factura = {
-        sedinte: sedinte,
-        dataEmitere: date,
-        scadenta: scadenta,
-        numarFactura: facturi.length + 1,
-      };
-      facturi.push(factura);
-      await updateDoc(elevRef, {
-        facturi: facturi,
-      });
-    }
+    await creeazaFactura(selectedSedinte, elevData);
   };
   const platesteCardAll = async () => {
     if (selectedSedinte.current.length > 0) {
@@ -355,34 +292,45 @@ function PlatiElev() {
     else return <td>Fonduri Insuficiente</td>;
   };
 
+  const getDataSedinteNeplatite = async () => {
+    let object = {};
+    const array = [];
+    await elevData?.sedinteNeplatite?.forEach(async (sedinta) => {
+      let sedintaRef = doc(
+        db,
+        "sedinte",
+        sedinta.sedintaID + Date.parse(new Date(sedinta.date.seconds * 1000))
+      );
+      let sedintaData = await getSedintaInfo(sedintaRef);
+      console.log({ sedintaData });
+
+      array.push({
+        profesor: sedintaData.profesor,
+        materie: sedintaData.materie,
+        text: elevData.text,
+        id: elevData.id,
+        sedintaId: sedintaData.TaskID,
+        Pret: sedinta.Pret,
+        sedintaRefFirebase: sedinta,
+        data: new Date(sedinta.date.seconds * 1000),
+      });
+      object[sedinta.sedintaID] = false;
+    });
+
+    const timer = setTimeout(() => {
+      setDeplatit(array);
+      setChecked(object);
+    }, 1000);
+    return () => clearTimeout(timer);
+  };
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    let array = [];
     if (elevData?.sedinteNeplatite.length > 0) {
-      let object = {};
-      elevData?.sedinteNeplatite?.forEach(async (sedinta) => {
-        let sedintaRef = doc(
-          db,
-          "sedinte",
-          sedinta.sedintaID + Date.parse(new Date(sedinta.date.seconds * 1000))
-        );
-        let sedintaData = await getSedintaInfo(sedintaRef);
-        array.push({
-          profesor: sedintaData.profesor,
-          materie: sedintaData.materie,
-          text: elevData.text,
-          id: elevData.id,
-          sedintaId: elevData.sedintaID,
-          Pret: sedinta.Pret,
-          data: new Date(sedinta.date.seconds * 1000),
-        });
-        object[sedinta.sedintaID] = false;
-      });
-      setChecked(object);
-    }
-    setDeplatit(array);
+      getDataSedinteNeplatite();
+    } else setDeplatit([]);
   }, [elevData]);
-
+  console.log({ deplatit });
   const panes = [
     {
       menuItem: "Sedinte Neplatite",
@@ -440,7 +388,7 @@ function PlatiElev() {
                   style={{
                     backgroundColor: "#32ba4d",
                     color: "white",
-                    width: "7.9vw",
+                    width: "12vw",
                   }}
                   onClick={() => {
                     setWichAction("platesteCashAll");
@@ -448,7 +396,7 @@ function PlatiElev() {
                   }}
                 >
                   <Icon name="money bill" />
-                  Plateste
+                  Plateste CASH
                 </Button>
                 {selectedSedinte.current.reduce(
                   (total, cuurentValue) => total + parseInt(cuurentValue.Pret),

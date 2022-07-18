@@ -27,7 +27,7 @@ import timeZoneNames from "cldr-dates-full/main/es/timeZoneNames.json";
 import { MultiSelect } from "@progress/kendo-react-dropdowns";
 import { db } from "../../firebase/firebase";
 import { getElevi } from "../../redux/actions";
-import { addSedintaNeplatita } from "../../Components/database/addSedintaNeplatita";
+import { addSedintaNeplatita } from "../../Components/database/sedinte/addSedintaNeplatita";
 
 import {
   doc,

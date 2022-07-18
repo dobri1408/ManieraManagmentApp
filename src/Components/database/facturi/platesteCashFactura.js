@@ -1,4 +1,4 @@
-import { db } from "../../firebase/firebase";
+import { db } from "../../../firebase/firebase";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 export const platesteFacturaCash = async (factura, elevData) => {
   console.log(factura, elevData);
