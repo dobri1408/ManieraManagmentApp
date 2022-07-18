@@ -184,6 +184,9 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
           Start: meditatie.Start,
           TaskID: id + Date.parse(meditatie.Start),
           plati: plati,
+          profesor: profesorDeLaMedite,
+          pretPerSedinta: meditatie.Pret,
+          materie: meditatie.MateriiIDs,
         },
         { merge: true }
       );

@@ -5,6 +5,7 @@ import { Grid, GridColumn as Column } from "@progress/kendo-react-grid";
 import { orderBy } from "@progress/kendo-data-query";
 import { platesteFacturaCash } from "../../Components/facturi/platesteCashFactura";
 import { platesteFacturaCard } from "../../Components/facturi/platesteCardFactura";
+import { getSedintaInfo } from "../../Components/database/getSedintaInfo";
 import {
   Icon,
   Tab,
@@ -354,40 +355,31 @@ function PlatiElev() {
     else return <td>Fonduri Insuficiente</td>;
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     let array = [];
-    elevData?.meditatii?.forEach((meditatie) => {
-      let neplatite = meditatie.sedinte.filter(
-        (sedinta) => sedinta.starePlata === "neplatit"
-      );
-
-      if (neplatite?.length > 0) {
-        let object = {};
-        neplatite.forEach((sedinta) => {
-          if (
-            array.find((data) => data.sedintaID === sedinta.sedintaID) ===
-            undefined
-          ) {
-            array.push({
-              profesor: meditatie.profesor,
-              grupa: meditatie.grupa,
-              materie: meditatie.materie,
-              text: elevData.text,
-              id: elevData.id,
-              sedintaID: sedinta.sedintaID,
-              starePlata: sedinta.starePlata,
-              Pret: sedinta.Pret,
-              data: new Date(sedinta.Start.seconds * 1000),
-              TaskID: meditatie.TaskID,
-              checked: false,
-            });
-
-            object[sedinta.sedintaID] = false;
-          }
+    if (elevData?.sedinteNeplatite.length > 0) {
+      let object = {};
+      elevData?.sedinteNeplatite?.forEach(async (sedinta) => {
+        let sedintaRef = doc(
+          db,
+          "sedinte",
+          sedinta.sedintaID + Date.parse(new Date(sedinta.date.seconds * 1000))
+        );
+        let sedintaData = await getSedintaInfo(sedintaRef);
+        array.push({
+          profesor: sedintaData.profesor,
+          materie: sedintaData.materie,
+          text: elevData.text,
+          id: elevData.id,
+          sedintaId: elevData.sedintaID,
+          Pret: sedinta.Pret,
+          data: new Date(sedinta.date.seconds * 1000),
         });
-        setChecked(object);
-      }
-    });
+        object[sedinta.sedintaID] = false;
+      });
+      setChecked(object);
+    }
     setDeplatit(array);
   }, [elevData]);
 
