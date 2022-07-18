@@ -33,41 +33,31 @@ export default function Plati() {
 
   useEffect(() => {
     if (elevi === undefined) return;
+    let elevFinancialDataArray = [];
 
     elevi.forEach((elev) => {
-      elev.meditatii.forEach((meditatie) => {
-        const neplatite = meditatie.sedinte.filter(
-          (sedinta) => sedinta.starePlata === "neplatit"
-        );
-
-        if (neplatite?.length > 0) {
-          if (
-            financialData.find((data) => data.TaskID === meditatie.TaskID) ===
-            undefined
-          )
-            setFinancialData([
-              ...financialData,
-              {
-                numar: neplatite.length,
-                suma: neplatite?.reduce((total, currentValue) => {
-                  return total + parseInt(currentValue.Pret);
-                }, 0),
-                profesor: meditatie.profesor,
-                grupa: meditatie.grupa,
-                materie: meditatie.materie,
-                theOldest: new Date(
-                  neplatite?.reduce((total, currentValue) => {
-                    return Math.min(total, currentValue.Start.seconds);
-                  }, neplatite[0].Start.seconds) * 1000
-                ),
-                text: elev.text,
-                id: elev.id,
-                TaskID: meditatie.TaskID,
-              },
-            ]);
-        }
-      });
+      console.log(elev);
+      let financialData = {
+        text: elev?.text,
+        numar: elev?.sedinteNeplatite?.length || 0,
+        theOldest:
+          new Date(
+            elev?.sedinteNeplatite?.reduce(
+              (total, current) =>
+                Math.min(total, new Date(current.date.seconds * 1000)),
+              new Date()
+            )
+          ) || "-",
+        suma:
+          elev?.sedinteNeplatite?.reduce(
+            (total, current) => total + parseInt(current.Pret),
+            0
+          ) || 0,
+        id: elev.id,
+      };
+      elevFinancialDataArray.push(financialData);
     });
+    setFinancialData(elevFinancialDataArray);
   }, [elevi]);
 
   return (
@@ -102,13 +92,7 @@ export default function Plati() {
             );
           }}
         />
-        <Column field="materie" title="Materie" filterable={false} />
-        <Column
-          field="profesor"
-          filter="string"
-          title="Profesor"
-          filterable={false}
-        />
+
         <Column
           field="numar"
           title="Numar Sedinte Neplatite"

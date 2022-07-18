@@ -27,6 +27,7 @@ import timeZoneNames from "cldr-dates-full/main/es/timeZoneNames.json";
 import { MultiSelect } from "@progress/kendo-react-dropdowns";
 import { db } from "../../firebase/firebase";
 import { getElevi } from "../../redux/actions";
+import { addSedintaNeplatita } from "../../Components/database/addSedintaNeplatita";
 
 import {
   doc,
@@ -176,7 +177,7 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
     const grupaDeElevi = meditatie.ElevID.map(
       (elevID) => eleviFromRedux.find((elev) => elev.id === elevID)?.text
     );
-    if (meditatie.Efectuata)
+    if (meditatie.Efectuata) {
       await setDoc(
         doc(db, "sedinte", id + Date.parse(meditatie.Start)),
         {
@@ -186,6 +187,7 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
         },
         { merge: true }
       );
+    }
 
     let actuallyTheGodID = meditatie.TaskID;
     if (meditatie.RecurrenceID) meditatie.TaskID = meditatie.RecurrenceID;
@@ -193,6 +195,18 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
     meditatie.ElevID.forEach(async (elevId) => {
       const elev = eleviFromRedux.find((elev) => elev.id === elevId);
       let meditatiiOfElev = [];
+      let elevRef = doc(db, "elevi", elev.id);
+
+      if (plati[elev.id].starePlata === "neplatit") {
+        const sedintaObject = {
+          TaskID: id + Date.parse(meditatie.Start),
+          meditatieID: meditatie.TaskID,
+          sedintaID: actuallyTheGodID,
+          date: meditatie.Start,
+          Pret: meditatie.Pret,
+        };
+        await addSedintaNeplatita(sedintaObject, elevRef);
+      }
       if (elev?.meditatii?.length > 0) meditatiiOfElev = [...elev.meditatii];
       let frecventa;
       if (
@@ -210,103 +224,101 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
           frecventa += " zile";
       }
       let cont = parseInt(elev.cont);
-      if (
-        meditatiiOfElev.find(
-          (meditatieOfElev) => meditatieOfElev.TaskID === meditatie.TaskID
-        ) === undefined
-      ) {
-        //CREARE MEDITATIE NOUA
-        const sedinte = [];
-        if (meditatie.Efectuata) {
-          sedinte.push({
-            Start: meditatie.Start,
-            TaskID: id + Date.parse(meditatie.Start),
-            starePlata: plati[elev.id].starePlata,
-            Pret: meditatie.Pret,
-            sedintaID: actuallyTheGodID,
-          });
-          if (plati[elev.id].starePlata === "cont") {
-            cont -= parseInt(meditatie.Pret);
-          }
-        }
 
-        await setDoc(doc(db, "elevi", elev.id), {
-          ...elev,
-          cont,
-          meditatii: [
-            ...meditatiiOfElev,
-            {
-              TaskID: meditatie.TaskID,
-              grupa: grupaDeElevi,
-              profesor: profesorDeLaMedite,
-              pretPerSedinta: meditatie.Pret,
-              materie: meditatie.MateriiIDs,
+      if (plati[elev.id].starePlata === "neplatit")
+        if (
+          meditatiiOfElev.find(
+            (meditatieOfElev) => meditatieOfElev.TaskID === meditatie.TaskID
+          ) === undefined
+        ) {
+          //CREARE MEDITATIE NOUA
+          const sedinte = [];
+          if (meditatie.Efectuata) {
+            sedinte.push({
               Start: meditatie.Start,
-              END: meditatie.End,
-              seMaiTine: true,
-              frecventa: frecventa,
-              sedinte: sedinte,
-            },
-          ],
-        });
-      } else {
-        const elment = meditatiiOfElev.find(
-          (medi) => medi.TaskID === meditatie.TaskID
-        );
-
-        const index = meditatiiOfElev.indexOf(elment);
-        //search for the sedintat
-        const sedintaObject = {
-          Start: meditatie.Start,
-          TaskID: id + Date.parse(meditatie.Start),
-
-          starePlata: plati[elev.id].starePlata,
-          Pret: meditatie.Pret,
-          sedintaID: actuallyTheGodID,
-        };
-        const whereIsSedinta = meditatiiOfElev[index]?.sedinte?.find(
-          (sedinta) => sedinta.TaskID === sedintaObject.TaskID
-        );
-        const indexSedinta =
-          meditatiiOfElev[index]?.sedinte?.indexOf(whereIsSedinta);
-        let sedinte = [];
-        if (indexSedinta === -1) {
-          if (meditatiiOfElev[index]?.sedinte?.length > 0)
-            sedinte = [...meditatiiOfElev[index].sedinte];
-          if (meditatie.Efectuata) {
-            sedinte.push(sedintaObject);
+              TaskID: id + Date.parse(meditatie.Start),
+              starePlata: plati[elev.id].starePlata,
+              Pret: meditatie.Pret,
+              sedintaID: actuallyTheGodID,
+            });
             if (plati[elev.id].starePlata === "cont") {
               cont -= parseInt(meditatie.Pret);
             }
           }
+
+          await updateDoc(doc(db, "elevi", elev.id), {
+            cont,
+            meditatii: [
+              ...meditatiiOfElev,
+              {
+                TaskID: meditatie.TaskID,
+                grupa: grupaDeElevi,
+                profesor: profesorDeLaMedite,
+                pretPerSedinta: meditatie.Pret,
+                materie: meditatie.MateriiIDs,
+                Start: meditatie.Start,
+                END: meditatie.End,
+                seMaiTine: true,
+                frecventa: frecventa,
+                sedinte: sedinte,
+              },
+            ],
+          });
         } else {
-          sedinte = [...meditatiiOfElev[index].sedinte];
-          if (meditatie.Efectuata) {
-            sedinte[indexSedinta] = sedintaObject;
-            if (plati[elev.id].starePlata === "cont") {
-              cont -= parseInt(meditatie.Pret);
+          const elment = meditatiiOfElev.find(
+            (medi) => medi.TaskID === meditatie.TaskID
+          );
+
+          const index = meditatiiOfElev.indexOf(elment);
+          //search for the sedintat
+          const sedintaObject = {
+            TaskID: id + Date.parse(meditatie.Start),
+            meditatieID: meditatie.TaskID,
+            sedintaID: actuallyTheGodID,
+          };
+
+          const whereIsSedinta = meditatiiOfElev[index]?.sedinte?.find(
+            (sedinta) => sedinta.TaskID === sedintaObject.TaskID
+          );
+          const indexSedinta =
+            meditatiiOfElev[index]?.sedinte?.indexOf(whereIsSedinta);
+          let sedinte = [];
+          if (indexSedinta === -1) {
+            if (meditatiiOfElev[index]?.sedinte?.length > 0)
+              sedinte = [...meditatiiOfElev[index].sedinte];
+            if (meditatie.Efectuata) {
+              sedinte.push(sedintaObject);
+              if (plati[elev.id].starePlata === "cont") {
+                cont -= parseInt(meditatie.Pret);
+              }
+            }
+          } else {
+            sedinte = [...meditatiiOfElev[index].sedinte];
+            if (meditatie.Efectuata) {
+              sedinte[indexSedinta] = sedintaObject;
+              if (plati[elev.id].starePlata === "cont") {
+                cont -= parseInt(meditatie.Pret);
+              }
             }
           }
-        }
 
-        meditatiiOfElev[index] = {
-          TaskID: meditatie.TaskID,
-          grupa: grupaDeElevi,
-          profesor: profesorDeLaMedite,
-          pretPerSedinta: meditatie.Pret,
-          materie: meditatie.MateriiIDs,
-          Start: meditatie.Start,
-          END: meditatie.End,
-          seMaiTine: true,
-          frecventa: frecventa,
-          sedinte: sedinte,
-        };
-        await setDoc(doc(db, "elevi", elev.id), {
-          ...elev,
-          cont,
-          meditatii: meditatiiOfElev,
-        });
-      }
+          meditatiiOfElev[index] = {
+            TaskID: meditatie.TaskID,
+            grupa: grupaDeElevi,
+            profesor: profesorDeLaMedite,
+            pretPerSedinta: meditatie.Pret,
+            materie: meditatie.MateriiIDs,
+            Start: meditatie.Start,
+            END: meditatie.End,
+            seMaiTine: true,
+            frecventa: frecventa,
+            sedinte: sedinte,
+          };
+          await updateDoc(doc(db, "elevi", elev.id), {
+            cont,
+            meditatii: meditatiiOfElev,
+          });
+        }
     });
     dispatch(getElevi());
     dispatch(PLATI({}));
