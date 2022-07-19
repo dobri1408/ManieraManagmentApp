@@ -217,6 +217,7 @@ function PlatiElev() {
       );
 
       let result = await platesteCashSedinte(index, selectedSedinte, elevData);
+
       console.log(index, result);
       dispatch(
         ACTUALIZARE_ELEVI_Sedinte_Neplatite({
@@ -231,7 +232,12 @@ function PlatiElev() {
   };
   const platesteCardAll = async () => {
     if (selectedSedinte?.current?.length > 0) {
-      await platesteCardSedinte(selectedSedinte, elevData);
+      let index = eleviFromRedux.indexOf(
+        eleviFromRedux.find((element) => element.id === elevData.id)
+      );
+
+      let result = await platesteCardSedinte(index, selectedSedinte, elevData);
+      console.log(index, result);
       dispatch(getElevi());
     }
   };
