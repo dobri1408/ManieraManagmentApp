@@ -200,7 +200,10 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
       let meditatiiOfElev = [];
       let elevRef = doc(db, "elevi", elev.id);
 
-      if (plati[elev.id].starePlata === "neplatit") {
+      if (
+        plati[elev.id].starePlata === "neplatit" &&
+        meditatie.Efectuata === true
+      ) {
         const sedintaObject = {
           TaskID: id + Date.parse(meditatie.Start),
           meditatieID: meditatie.TaskID,

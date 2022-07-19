@@ -64,6 +64,16 @@ export const testSlice = createSlice({
       ...state,
       elevi: action.payload,
     }),
+    ACTUALIZARE_ELEVI_Sedinte_Neplatite: (state, action) => {
+      let elevi = JSON.parse(JSON.stringify(state.elevi));
+      elevi[action.payload.index].sedinteNeplatite =
+        action.payload.sedinteNeplatite;
+      console.log("REDIX", elevi);
+      return {
+        ...state,
+        elevi: elevi,
+      };
+    },
     GET_MATERII: (state, action) => ({
       ...state,
       materii: action.payload,
@@ -93,6 +103,7 @@ export const testSlice = createSlice({
     },
     [getElevi.fulfilled]: (state, { payload }) => {
       if (payload?.payload?.array?.length > 0) {
+        state.elevi = [];
         state.elevi = [...payload?.payload?.array];
       }
     },

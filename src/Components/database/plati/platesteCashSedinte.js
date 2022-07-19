@@ -8,7 +8,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { db } from "../../../firebase/firebase";
-export const platesteCashSedinte = async (selectedSedinte, elevData) => {
+export const platesteCashSedinte = async (index, selectedSedinte, elevData) => {
   if (selectedSedinte.current.length > 0) {
     const elevRef = doc(db, "elevi", elevData.id);
     //Remove from sedinte neplatite sedinta
@@ -18,6 +18,7 @@ export const platesteCashSedinte = async (selectedSedinte, elevData) => {
 
       let docSnap = await getDoc(docRef);
       let plati = docSnap?.data()?.plati;
+      console.log({ plati });
       plati[elevData.id].starePlata = "cash";
 
       updateDoc(docRef, {
@@ -40,5 +41,9 @@ export const platesteCashSedinte = async (selectedSedinte, elevData) => {
           sedintePlatite: [dataItem],
         });
     });
+    let docSnap = await getDoc(elevRef);
+    let array = docSnap.data().sedinteNeplatite;
+
+    return { index: index, sedinteNeplatite: array };
   }
 };

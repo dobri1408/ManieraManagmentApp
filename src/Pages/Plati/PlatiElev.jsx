@@ -24,6 +24,9 @@ import "./Plati.css";
 import { getElevi } from "../../redux/actions";
 import { useDispatch } from "react-redux";
 import ModalFactura from "../../Components/ModalFactura";
+import { testSlice } from "../../redux/store";
+const { actions } = testSlice;
+const { ACTUALIZARE_ELEVI_Sedinte_Neplatite } = actions;
 const initialSort = [
   {
     field: "materie",
@@ -47,6 +50,7 @@ function PlatiElev() {
   const elevData = useSelector((state) => {
     return state.elevi.find((elev) => elev.id === id.id);
   });
+  const eleviFromRedux = useSelector((state) => state.elevi);
 
   const [deplatit, setDeplatit] = useState([]);
   const [adauga, setAdauga] = useState(false);
@@ -185,10 +189,12 @@ function PlatiElev() {
       >
         <Checkbox
           className="checker"
-          checked={checked[props.dataItem.sedintaID]}
+          checked={checked[props.dataItem.sedintaId]}
           onChange={(e, data) => {
             let object = { ...checked };
-            object[props.dataItem.sedintaID] = data.checked;
+
+            object[props.dataItem.sedintaId] = data.checked;
+
             setChecked(object);
             if (data.checked === true) {
               selectedSedinte.current.push(props.dataItem);
@@ -205,8 +211,20 @@ function PlatiElev() {
     );
   };
   const platesteCashAll = async () => {
-    await platesteCashSedinte(selectedSedinte, elevData);
-    dispatch(getElevi());
+    if (selectedSedinte?.current?.length > 0) {
+      let index = eleviFromRedux.indexOf(
+        eleviFromRedux.find((element) => element.id === elevData.id)
+      );
+
+      let result = await platesteCashSedinte(index, selectedSedinte, elevData);
+      console.log(index, result);
+      dispatch(
+        ACTUALIZARE_ELEVI_Sedinte_Neplatite({
+          index: index,
+          sedinteNeplatite: result,
+        })
+      );
+    }
   };
   const factura = async () => {
     await creeazaFactura(selectedSedinte, elevData);
@@ -252,7 +270,6 @@ function PlatiElev() {
   };
 
   const getDataSedinteNeplatite = async () => {
-    console.log("se intra aici");
     let object = {};
     const array = [];
     await elevData?.sedinteNeplatite?.forEach(async (sedinta) => {
@@ -285,12 +302,12 @@ function PlatiElev() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    console.log(elevData?.sedinteNeplatite);
+    //    dispatch(getElevi());
+
     if (elevData?.sedinteNeplatite?.length > 0) {
       getDataSedinteNeplatite();
     } else {
       setDeplatit([]);
-      console.log("intru aici");
     }
   }, [elevData]);
 

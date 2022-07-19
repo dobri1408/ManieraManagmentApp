@@ -5,7 +5,7 @@ export const addSedintaNeplatita = async (sedintaObject, elevRef) => {
   await setDoc(
     elevRef,
     {
-      sedinteNeplatite: [sedintaObject],
+      sedinteNeplatite: arrayUnion(sedintaObject),
     },
     { merge: true }
   );
