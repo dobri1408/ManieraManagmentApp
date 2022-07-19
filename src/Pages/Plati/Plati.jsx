@@ -36,7 +36,6 @@ export default function Plati() {
     let elevFinancialDataArray = [];
 
     elevi.forEach((elev) => {
-      console.log(elev);
       let financialData = {
         text: elev?.text,
         numar: elev?.sedinteNeplatite?.length || 0,

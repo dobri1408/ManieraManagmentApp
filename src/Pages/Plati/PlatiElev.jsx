@@ -8,6 +8,7 @@ import { platesteFacturaCard } from "../../Components/database/facturi/platesteC
 import { getSedintaInfo } from "../../Components/database/sedinte/getSedintaInfo";
 import { creeazaFactura } from "../../Components/database/facturi/creeazaFactura";
 import { platesteCashSedinte } from "../../Components/database/plati/platesteCashSedinte";
+import { platesteCardSedinte } from "../../Components/database/plati/platesteCardSedinte";
 import {
   Icon,
   Tab,
@@ -43,10 +44,10 @@ function PlatiElev() {
     }
     setActiveIndex(value);
   };
-  const elevData = useSelector((state) =>
-    state.elevi.find((elev) => elev.id === id.id)
-  );
-  console.log({ elevData });
+  const elevData = useSelector((state) => {
+    return state.elevi.find((elev) => elev.id === id.id);
+  });
+
   const [deplatit, setDeplatit] = useState([]);
   const [adauga, setAdauga] = useState(false);
   const [selectedAll, setSelectedAll] = useState(false);
@@ -211,51 +212,9 @@ function PlatiElev() {
     await creeazaFactura(selectedSedinte, elevData);
   };
   const platesteCardAll = async () => {
-    if (selectedSedinte.current.length > 0) {
-      const elevRef = doc(db, "elevi", elevData.id);
-
-      let total = 0;
-      let meditatiii = JSON.parse(JSON.stringify(elevData.meditatii));
-      selectedSedinte.current.forEach((dataItem) => {
-        let MeditatieToFind = meditatiii.find(
-          (meditatie) => meditatie.TaskID === dataItem.TaskID
-        );
-        let indexEL = meditatiii.indexOf(MeditatieToFind);
-        total += parseInt(dataItem.Pret);
-        let sedinta = MeditatieToFind.sedinte.find(
-          (sedinta) => sedinta.sedintaID === dataItem.sedintaID
-        );
-        let index = MeditatieToFind.sedinte.indexOf(sedinta);
-
-        meditatiii[indexEL].sedinte[index].starePlata = "cont";
-      });
-
-      await updateDoc(
-        elevRef,
-        {
-          meditatii: meditatiii,
-        },
-        { merge: true }
-      );
-
+    if (selectedSedinte?.current?.length > 0) {
+      await platesteCardSedinte(selectedSedinte, elevData);
       dispatch(getElevi());
-      selectedSedinte.current.forEach(async (dataItem) => {
-        let docRef = doc(
-          db,
-          "sedinte",
-          dataItem.sedintaID + Date.parse(dataItem.data)
-        );
-        let docSnap = getDoc(docRef);
-        let plati = docSnap.data().plati;
-        plati[elevData.id].starePlata = "cont";
-
-        await updateDoc(docRef, {
-          plati: plati,
-        });
-      });
-      await updateDoc(elevRef, {
-        cont: parseInt(elevData.cont) - parseInt(total),
-      });
     }
   };
 
@@ -293,6 +252,7 @@ function PlatiElev() {
   };
 
   const getDataSedinteNeplatite = async () => {
+    console.log("se intra aici");
     let object = {};
     const array = [];
     await elevData?.sedinteNeplatite?.forEach(async (sedinta) => {
@@ -302,7 +262,6 @@ function PlatiElev() {
         sedinta.sedintaID + Date.parse(new Date(sedinta.date.seconds * 1000))
       );
       let sedintaData = await getSedintaInfo(sedintaRef);
-      console.log({ sedintaData });
 
       array.push({
         profesor: sedintaData.profesor,
@@ -326,11 +285,15 @@ function PlatiElev() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (elevData?.sedinteNeplatite.length > 0) {
+    console.log(elevData?.sedinteNeplatite);
+    if (elevData?.sedinteNeplatite?.length > 0) {
       getDataSedinteNeplatite();
-    } else setDeplatit([]);
+    } else {
+      setDeplatit([]);
+      console.log("intru aici");
+    }
   }, [elevData]);
-  console.log({ deplatit });
+
   const panes = [
     {
       menuItem: "Sedinte Neplatite",
@@ -655,7 +618,6 @@ function PlatiElev() {
               platesteFacturaCash(propsForAction, elevData);
             } else if (whichAction === "platesteFacturaCard") {
               platesteFacturaCard(propsForAction, elevData);
-              console.log("hello");
             } else if (whichAction === "PlatesteFacturaLinkDePlata")
               platesteFacturaLinkDePlata();
             setConfirmationShow(false);

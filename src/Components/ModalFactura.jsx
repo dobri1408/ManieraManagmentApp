@@ -10,7 +10,7 @@ const initialSort = [
 ];
 function ModalFactura({ setOpen, open, dataFactura, elev }) {
   const pdfExportComponent = React.useRef(null);
-  console.log(dataFactura);
+
   let id = 0;
   //TO DO DE PUS BLOC SI APARTAMENT
   const [sort, setSort] = React.useState(initialSort);

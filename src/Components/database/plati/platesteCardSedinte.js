@@ -1,4 +1,3 @@
-import { tableKeyboardNavigationBodyAttributes } from "@progress/kendo-react-data-tools";
 import {
   doc,
   updateDoc,
@@ -8,18 +7,19 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { db } from "../../../firebase/firebase";
-export const platesteCashSedinte = async (selectedSedinte, elevData) => {
+export const platesteCardSedinte = async (selectedSedinte, elevData) => {
+  console.log(selectedSedinte, elevData);
   if (selectedSedinte.current.length > 0) {
     const elevRef = doc(db, "elevi", elevData.id);
     //Remove from sedinte neplatite sedinta
-
+    let total = 0;
     selectedSedinte.current.forEach(async (dataItem) => {
       let docRef = doc(db, "sedinte", dataItem.sedintaId);
 
       let docSnap = await getDoc(docRef);
       let plati = docSnap?.data()?.plati;
-      plati[elevData.id].starePlata = "cash";
-
+      plati[elevData.id].starePlata = "card";
+      total += parseInt(dataItem.Pret);
       updateDoc(docRef, {
         plati: plati,
       });
@@ -39,6 +39,10 @@ export const platesteCashSedinte = async (selectedSedinte, elevData) => {
         setDoc(doc(db, "sedintePlatite", elevData.id + new Date().getMonth()), {
           sedintePlatite: [dataItem],
         });
+    });
+    console.log({ total });
+    await updateDoc(elevRef, {
+      cont: parseInt(elevData.cont) - parseInt(total),
     });
   }
 };
