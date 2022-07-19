@@ -79,6 +79,9 @@ function PlatiElev() {
         </td>
       );
   };
+  const dispatchRemove = (index, array) => {
+    dispatch(ACTUALIZARE_ELEVI_Sedinte_Neplatite(index, array));
+  };
   const ReturnDate = (props) => {
     return (
       <td>
@@ -86,80 +89,11 @@ function PlatiElev() {
       </td>
     );
   };
-  const platesteCash = React.useCallback(
-    async (dataItem) => {
-      let docRef = doc(
-        db,
-        "sedinte",
-        dataItem.sedintaID + Date.parse(dataItem.data)
-      );
-      let docSnap = await getDoc(docRef);
-      let plati = docSnap.data().plati;
-      plati[elevData.id].starePlata = "cash";
-
-      await updateDoc(docRef, {
-        plati: plati,
-      });
-      let elevRef = doc(db, "elevi", elevData.id);
-      docSnap = await getDoc(elevRef);
-      let meditatiii = docSnap.data().meditatii;
-      let MeditatieToFind = elevData.meditatii.find(
-        (meditatie) => meditatie.TaskID === dataItem.TaskID
-      );
-      let indexEL = elevData.meditatii.indexOf(MeditatieToFind);
-
-      let sedinta = MeditatieToFind.sedinte.find(
-        (sedinta) => sedinta.sedintaID === dataItem.sedintaID
-      );
-      let index = MeditatieToFind.sedinte.indexOf(sedinta);
-
-      meditatiii[indexEL].sedinte[index].starePlata = "cash";
-
-      await updateDoc(elevRef, {
-        meditatii: meditatiii,
-      });
-      dispatch(getElevi());
-    },
-    [dispatch, elevData?.id, elevData?.meditatii]
-  );
+  const platesteCash = async (dataItem) => {
+    await platesteCashSedinte(0, { current: [dataItem] }, elevData);
+  };
   const platesteCard = async (dataItem) => {
-    //sedinte database
-    let docRef = doc(
-      db,
-      "sedinte",
-      dataItem.sedintaID + Date.parse(dataItem.data)
-    );
-    let docSnap = await getDoc(docRef);
-    let plati = docSnap.data().plati;
-    plati[elevData.id].starePlata = "cont";
-
-    await updateDoc(docRef, {
-      plati: plati,
-    });
-
-    let MeditatieToFind = elevData.meditatii.find(
-      (meditatie) => meditatie.TaskID === dataItem.TaskID
-    );
-    let indexEL = elevData.meditatii.indexOf(MeditatieToFind);
-    let meditatiii = JSON.parse(JSON.stringify(elevData.meditatii));
-    let indexIDK = 0;
-    let elevRef = doc(db, "elevi", elevData.id);
-    let sedinta = MeditatieToFind.sedinte.find(
-      (sedinta) => sedinta.sedintaID === dataItem.sedintaID
-    );
-    let index = MeditatieToFind.sedinte.indexOf(sedinta);
-
-    meditatiii[indexEL].sedinte[index].starePlata = "cont";
-
-    await updateDoc(elevRef, {
-      meditatii: [...meditatiii],
-    });
-    const washingtonRef = doc(db, "elevi", elevData.id);
-    await updateDoc(washingtonRef, {
-      cont: parseInt(elevData.cont) - parseInt(sedinta.Pret),
-    });
-
-    dispatch(getElevi());
+    await platesteCardSedinte(0, { current: [dataItem] }, elevData);
   };
   const cellWithBackGround = (props) => {
     const style = {
@@ -178,6 +112,7 @@ function PlatiElev() {
   };
 
   const facturaCell = (props) => {
+    console.log(props.dataItem.sedintaId);
     return (
       <td
         style={{
@@ -216,15 +151,9 @@ function PlatiElev() {
         eleviFromRedux.find((element) => element.id === elevData.id)
       );
 
-      let result = await platesteCashSedinte(index, selectedSedinte, elevData);
-
-      console.log(index, result);
-      dispatch(
-        ACTUALIZARE_ELEVI_Sedinte_Neplatite({
-          index: index,
-          sedinteNeplatite: result,
-        })
-      );
+      await platesteCashSedinte(index, selectedSedinte, elevData).then(() => {
+        dispatch(getElevi());
+      });
     }
   };
   const factura = async () => {
@@ -296,7 +225,7 @@ function PlatiElev() {
         sedintaRefFirebase: sedinta,
         data: new Date(sedinta.date.seconds * 1000),
       });
-      object[sedinta.sedintaID] = false;
+      object[sedintaData.TaskID] = false;
     });
 
     const timer = setTimeout(() => {
@@ -316,7 +245,7 @@ function PlatiElev() {
       setDeplatit([]);
     }
   }, [elevData]);
-
+  console.log(selectedSedinte, checked);
   const panes = [
     {
       menuItem: "Sedinte Neplatite",
@@ -629,12 +558,16 @@ function PlatiElev() {
             setConfirmationShow(false);
           }}
           content="Esti sigur?"
-          onConfirm={() => {
+          onConfirm={async () => {
             if (whichAction === "onlyOneCash")
               platesteCash(propsForAction.dataItem);
             else if (whichAction === "onlyOneCard")
               platesteCard(propsForAction.dataItem);
-            else if (whichAction === "platesteCashAll") platesteCashAll();
+            else if (whichAction === "platesteCashAll")
+              await platesteCashAll().then(() => {
+                console.log("se afla coi");
+                dispatch(getElevi());
+              });
             else if (whichAction === "platesteCardAll") platesteCardAll();
             else if (whichAction === "factura") factura();
             else if (whichAction === "platesteFacturaCash") {
@@ -645,7 +578,7 @@ function PlatiElev() {
               platesteFacturaLinkDePlata();
             setConfirmationShow(false);
             selectedSedinte.current = [];
-            dispatch(getElevi());
+            window.location.reload();
           }}
         />
         <h1>{elevData?.text} - Plati</h1>

@@ -26,6 +26,7 @@ export const platesteCardSedinte = async (index, selectedSedinte, elevData) => {
       updateDoc(elevRef, {
         sedinteNeplatite: arrayRemove(dataItem.sedintaRefFirebase),
       });
+
       let idk = doc(db, "sedintePlatite", elevData.id + new Date().getMonth());
       let idkSnap = await getDoc(idk);
       if (idkSnap?.data())

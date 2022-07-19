@@ -40,7 +40,7 @@ export const getElevi = createAsyncThunk("GET_ELEVI", async () => {
     });
   });
   array.sort();
-
+  console.log("ElEVI", array);
   return {
     payload: {
       array,

@@ -106,6 +106,9 @@ function Orare({ resources, materiiFromDataBase, meditatii, orientare }) {
   );
   const dispatch = useDispatch();
 
+  const dispatchElev = () => {
+    dispatch(getElevi());
+  };
   const divs = React.useRef(
     document.getElementsByClassName("k-scheduler-body")
   );
