@@ -75,6 +75,16 @@ export const testSlice = createSlice({
         elevi: elevi,
       };
     },
+    ACTUALIZARE_ELEV_FACTURI_NEPLATITE: (state, action) => {
+      let elevi = JSON.parse(JSON.stringify(state.elevi));
+      elevi[action.payload.index].facturiNeplatite =
+        action.payload.facturiNeplatite;
+      console.log("REDIX", elevi);
+      return {
+        ...state,
+        elevi: elevi,
+      };
+    },
     GET_MATERII: (state, action) => ({
       ...state,
       materii: action.payload,

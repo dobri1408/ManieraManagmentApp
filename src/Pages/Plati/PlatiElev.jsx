@@ -29,7 +29,7 @@ import { testSlice } from "../../redux/store";
 import { setExpandedState } from "@progress/kendo-react-data-tools";
 const { actions } = testSlice;
 const { ACTUALIZARE_ELEVI_Sedinte_Neplatite } = actions;
-const { GET_FACTURI } = actions;
+const { GET_FACTURI, ACTUALIZARE_ELEV_FACTURI_NEPLATITE } = actions;
 const initialSort = [
   {
     field: "materie",
@@ -85,6 +85,25 @@ function PlatiElev() {
       ACTUALIZARE_ELEVI_Sedinte_Neplatite({
         index: index,
         sedinteNeplatite: array,
+      })
+    );
+  };
+
+  const actualizeazaFacturiRedux = (factura) => {
+    let array = [];
+    facturiFromRedux.forEach((fact) => array.push(fact));
+    array.push(factura);
+    dispatch(GET_FACTURI(array));
+    let index = eleviFromRedux.indexOf(elevData);
+    array = [];
+    elevData.facturiNeplatite.forEach((fact) => {
+      array.push(fact);
+    });
+    array.push(factura);
+    dispatch(
+      ACTUALIZARE_ELEV_FACTURI_NEPLATITE({
+        index: index,
+        facturiNeplatite: array,
       })
     );
   };
@@ -184,6 +203,28 @@ function PlatiElev() {
     }
   };
   const factura = async () => {
+    let facturi = JSON.parse(JSON.stringify(elevData.facturiNeplatite || []));
+    let today = new Date();
+    let date =
+      today.getFullYear() +
+      "-" +
+      (today.getMonth() + 1) +
+      "-" +
+      today.getDate();
+    let scadenta = new Date();
+    scadenta.setDate(today.getDate() + 20);
+    let sedinte = [];
+
+    selectedSedinte.current.forEach((sedinta) => {
+      sedinte.push({ id: sedinta.sedintaId, date: sedinta.data });
+    });
+    let factura = {
+      sedinte: sedinte,
+      dataEmitere: date,
+      scadenta: scadenta,
+      numarFactura: facturi.length + 1,
+    };
+    actualizeazaFacturiRedux(factura);
     await creeazaFactura(selectedSedinte, elevData);
   };
   const platesteCardAll = async () => {
