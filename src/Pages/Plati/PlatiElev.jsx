@@ -25,8 +25,10 @@ import { getElevi } from "../../redux/actions";
 import { useDispatch } from "react-redux";
 import ModalFactura from "../../Components/ModalFactura";
 import { testSlice } from "../../redux/store";
+
 import { setExpandedState } from "@progress/kendo-react-data-tools";
 const { actions } = testSlice;
+const { ACTUALIZARE_ELEVI_Sedinte_Neplatite } = actions;
 const { GET_FACTURI } = actions;
 const initialSort = [
   {
@@ -66,6 +68,26 @@ function PlatiElev() {
   const [propsForAction, setProosForAction] = useState({});
   const [facturiData, setFacturiData] = useState([]);
   const facturiFromRedux = useSelector((state) => state.facturiNeplatite);
+  const actualizeazaSedinteNeplatiteRedux = (selectedSedinte) => {
+    let array = [];
+    let index = eleviFromRedux.indexOf(elevData);
+    for (let sedinta of elevData.sedinteNeplatite) {
+      if (
+        selectedSedinte.current.find(
+          (sedintaSelectat) =>
+            sedintaSelectat.sedintaRefFirebase.sedintaID === sedinta.sedintaID
+        )
+      )
+        continue;
+      array.push(sedinta);
+    }
+    dispatch(
+      ACTUALIZARE_ELEVI_Sedinte_Neplatite({
+        index: index,
+        sedinteNeplatite: array,
+      })
+    );
+  };
   const platesteFacturaLinkDePlata = () => {};
 
   const paymentMethod = (props) => {
@@ -90,9 +112,11 @@ function PlatiElev() {
     );
   };
   const platesteCash = async (dataItem) => {
+    actualizeazaSedinteNeplatiteRedux({ current: [dataItem] });
     await platesteCashSedinte(0, { current: [dataItem] }, elevData);
   };
   const platesteCard = async (dataItem) => {
+    actualizeazaSedinteNeplatiteRedux({ current: [dataItem] });
     await platesteCardSedinte(0, { current: [dataItem] }, elevData);
   };
   const cellWithBackGround = (props) => {
@@ -147,13 +171,16 @@ function PlatiElev() {
   };
   const platesteCashAll = async () => {
     if (selectedSedinte?.current?.length > 0) {
+      actualizeazaSedinteNeplatiteRedux(selectedSedinte);
       let index = eleviFromRedux.indexOf(
         eleviFromRedux.find((element) => element.id === elevData.id)
       );
 
-      await platesteCashSedinte(index, selectedSedinte, elevData).then(() => {
-        dispatch(getElevi());
-      });
+      return await platesteCashSedinte(index, selectedSedinte, elevData).then(
+        () => {
+          // dispatch(getElevi());
+        }
+      );
     }
   };
   const factura = async () => {
@@ -161,13 +188,13 @@ function PlatiElev() {
   };
   const platesteCardAll = async () => {
     if (selectedSedinte?.current?.length > 0) {
+      actualizeazaSedinteNeplatiteRedux(selectedSedinte);
       let index = eleviFromRedux.indexOf(
         eleviFromRedux.find((element) => element.id === elevData.id)
       );
 
       let result = await platesteCardSedinte(index, selectedSedinte, elevData);
       console.log(index, result);
-      dispatch(getElevi());
     }
   };
 
@@ -214,18 +241,18 @@ function PlatiElev() {
         sedinta.sedintaID + Date.parse(new Date(sedinta.date.seconds * 1000))
       );
       let sedintaData = await getSedintaInfo(sedintaRef);
-
-      array.push({
-        profesor: sedintaData.profesor,
-        materie: sedintaData.materie,
-        text: elevData.text,
-        id: elevData.id,
-        sedintaId: sedintaData.TaskID,
-        Pret: sedinta.Pret,
-        sedintaRefFirebase: sedinta,
-        data: new Date(sedinta.date.seconds * 1000),
-      });
-      object[sedintaData.TaskID] = false;
+      if (sedintaData)
+        array.push({
+          profesor: sedintaData.profesor,
+          materie: sedintaData.materie,
+          text: elevData.text,
+          id: elevData.id,
+          sedintaId: sedintaData.TaskID,
+          Pret: sedinta.Pret,
+          sedintaRefFirebase: sedinta,
+          data: new Date(sedinta.date.seconds * 1000),
+        });
+      object[sedintaData?.TaskID] = false;
     });
 
     const timer = setTimeout(() => {
@@ -453,15 +480,11 @@ function PlatiElev() {
                       <div style={{ color: "red" }}>
                         {"               Total de plata: "}
 
-                        {factura?.sedinte
-                          ?.sort(function (a, b) {
-                            return a.dataEmitere - b.dataEmitere;
-                          })
-                          ?.reduce((total, sedinta) => {
-                            if (sedinta.starePlata === "neplatit")
-                              return total + parseInt(sedinta.Pret);
-                            else return total;
-                          }, 0)}
+                        {factura?.sedinte?.reduce((total, sedinta) => {
+                          if (sedinta.starePlata === "neplatita")
+                            return total + parseInt(sedinta.Pret);
+                          else return total;
+                        }, 0)}
                       </div>
                       <div>
                         <div>
@@ -591,26 +614,27 @@ function PlatiElev() {
           }}
           content="Esti sigur?"
           onConfirm={async () => {
-            if (whichAction === "onlyOneCash")
-              platesteCash(propsForAction.dataItem);
-            else if (whichAction === "onlyOneCard")
-              platesteCard(propsForAction.dataItem);
-            else if (whichAction === "platesteCashAll")
+            if (whichAction === "onlyOneCash") {
+              await platesteCash(propsForAction.dataItem);
+            } else if (whichAction === "onlyOneCard") {
+              await platesteCard(propsForAction.dataItem);
+            } else if (whichAction === "platesteCashAll") {
               await platesteCashAll().then(() => {
-                console.log("se afla coi");
-                dispatch(getElevi());
+                // window.location.reload();
               });
-            else if (whichAction === "platesteCardAll") platesteCardAll();
-            else if (whichAction === "factura") factura();
-            else if (whichAction === "platesteFacturaCash") {
+            } else if (whichAction === "platesteCardAll") {
+              await platesteCardAll();
+            } else if (whichAction === "factura") {
+              await factura();
+            } else if (whichAction === "platesteFacturaCash") {
               platesteFacturaCash(propsForAction, elevData);
             } else if (whichAction === "platesteFacturaCard") {
               platesteFacturaCard(propsForAction, elevData);
-            } else if (whichAction === "PlatesteFacturaLinkDePlata")
+            } else if (whichAction === "PlatesteFacturaLinkDePlata") {
               platesteFacturaLinkDePlata();
+            }
             setConfirmationShow(false);
             selectedSedinte.current = [];
-            window.location.reload();
           }}
         />
         <h1>{elevData?.text} - Plati</h1>

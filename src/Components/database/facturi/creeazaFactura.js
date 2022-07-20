@@ -1,5 +1,5 @@
 import { db } from "../../../firebase/firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 export const creeazaFactura = async (selectedSedinte, elevData) => {
   if (selectedSedinte.current.length > 0) {
     const elevRef = doc(db, "elevi", elevData.id);
@@ -27,7 +27,7 @@ export const creeazaFactura = async (selectedSedinte, elevData) => {
     facturi.push(factura);
 
     await updateDoc(elevRef, {
-      facturiNeplatite: facturi,
+      facturiNeplatite: arrayUnion(factura),
     });
   }
 };

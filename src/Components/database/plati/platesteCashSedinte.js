@@ -8,10 +8,12 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { db } from "../../../firebase/firebase";
+
 export const platesteCashSedinte = async (index, selectedSedinte, elevData) => {
   if (selectedSedinte.current.length > 0) {
     const elevRef = doc(db, "elevi", elevData.id);
     //Remove from sedinte neplatite sedinta
+    console.log("ajung aici");
     let array = JSON.parse(JSON.stringify(elevData.sedinteNeplatite));
 
     selectedSedinte.current.forEach(async (dataItem) => {
@@ -25,6 +27,7 @@ export const platesteCashSedinte = async (index, selectedSedinte, elevData) => {
       await updateDoc(docRef, {
         plati: plati,
       });
+      console.log("FIREBASE", dataItem.sedintaRefFirebase);
       await updateDoc(elevRef, {
         sedinteNeplatite: arrayRemove(dataItem.sedintaRefFirebase),
       });
@@ -40,7 +43,7 @@ export const platesteCashSedinte = async (index, selectedSedinte, elevData) => {
         );
       else
         setDoc(doc(db, "sedintePlatite", elevData.id + new Date().getMonth()), {
-          sedintePlatite: [dataItem],
+          sedintePlatite: arrayUnion(dataItem),
         });
       let index = array.indexOf(dataItem.sedintaRefFirebase);
       console.log(index);
