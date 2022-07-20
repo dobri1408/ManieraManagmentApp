@@ -9,6 +9,7 @@ const initialState = {
   profesori: [],
   selectedMaterie: "",
   plati: {},
+  facturiNeplatite: [],
   sali: [
     {
       text: "Sala 1",
@@ -78,6 +79,10 @@ export const testSlice = createSlice({
       ...state,
       materii: action.payload,
     }),
+    GET_FACTURI: (state, action) => {
+      console.log(action);
+      return { ...state, facturiNeplatite: action.payload };
+    },
     GET_MEDITATII: (state, action) => ({
       ...state,
       profesori: action.payload,

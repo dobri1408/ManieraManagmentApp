@@ -25,8 +25,9 @@ import { getElevi } from "../../redux/actions";
 import { useDispatch } from "react-redux";
 import ModalFactura from "../../Components/ModalFactura";
 import { testSlice } from "../../redux/store";
+import { setExpandedState } from "@progress/kendo-react-data-tools";
 const { actions } = testSlice;
-const { ACTUALIZARE_ELEVI_Sedinte_Neplatite } = actions;
+const { GET_FACTURI } = actions;
 const initialSort = [
   {
     field: "materie",
@@ -63,7 +64,8 @@ function PlatiElev() {
   const [confirmationShow, setConfirmationShow] = useState(false);
   const [whichAction, setWichAction] = useState("none");
   const [propsForAction, setProosForAction] = useState({});
-
+  const [facturiData, setFacturiData] = useState([]);
+  const facturiFromRedux = useSelector((state) => state.facturiNeplatite);
   const platesteFacturaLinkDePlata = () => {};
 
   const paymentMethod = (props) => {
@@ -79,13 +81,11 @@ function PlatiElev() {
         </td>
       );
   };
-  const dispatchRemove = (index, array) => {
-    dispatch(ACTUALIZARE_ELEVI_Sedinte_Neplatite(index, array));
-  };
+
   const ReturnDate = (props) => {
     return (
       <td>
-        {new Date(props.dataItem["data"].seconds * 1000).toLocaleDateString()}
+        {new Date(props.dataItem["data"]?.seconds * 1000).toLocaleDateString()}
       </td>
     );
   };
@@ -235,10 +235,41 @@ function PlatiElev() {
     return () => clearTimeout(timer);
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const constructorFacturi = async () => {
+    if (elevData?.facturiNeplatite) {
+      let facturi = [];
+      for (let factura of JSON.parse(
+        JSON.stringify(elevData?.facturiNeplatite)
+      )) {
+        let array = [];
+        for (let sedinta of factura.sedinte) {
+          let getSedintaData = await getSedintaInfo(
+            doc(db, "sedinte", sedinta.id)
+          );
+          console.log(sedinta.id);
+          console.log({ getSedintaData });
+          if (getSedintaData)
+            array.push({
+              ...getSedintaData,
+              text: elevData.text,
+              Pret: getSedintaData.pretPerSedinta,
+              data: getSedintaData.Start,
+            });
+        }
+        facturi.push({
+          ...factura,
+          sedinte: array,
+        });
+      }
+      console.log({ facturi });
+      dispatch(GET_FACTURI(facturi));
+    }
+  };
+  console.log({ facturiFromRedux });
   useEffect(() => {
-    //    dispatch(getElevi());
-
+    constructorFacturi();
+  }, [elevData]);
+  useEffect(() => {
     if (elevData?.sedinteNeplatite?.length > 0) {
       getDataSedinteNeplatite();
     } else {
@@ -343,7 +374,7 @@ function PlatiElev() {
               <div style={{ paddingLeft: "69vw", color: "red" }}>
                 <h2>
                   Total De Plata :{" "}
-                  {deplatit.reduce(
+                  {deplatit?.reduce(
                     (prev, current) => parseInt(prev) + parseInt(current.Pret),
                     0
                   )}
@@ -403,7 +434,8 @@ function PlatiElev() {
           <Accordion styled style={{ width: "100%" }}>
             {
               //e obiect
-              elevData.facturi.map((factura, index) => {
+              facturiFromRedux?.map((factura, index) => {
+                console.log({ factura });
                 return (
                   <>
                     <Accordion.Title
@@ -414,18 +446,18 @@ function PlatiElev() {
                       }}
                     >
                       <Icon name="dropdown" />
-                      Factura nr O_{factura.numarFactura} -
+                      Factura nr O_{factura?.numarFactura} -
                       <div style={{ color: "#32ba4d", fontWeight: "bold" }}>
-                        Data Emitere: {factura.dataEmitere}
+                        Data Emitere: {factura?.dataEmitere}
                       </div>
                       <div style={{ color: "red" }}>
                         {"               Total de plata: "}
 
-                        {factura.sedinte
-                          .sort(function (a, b) {
+                        {factura?.sedinte
+                          ?.sort(function (a, b) {
                             return a.dataEmitere - b.dataEmitere;
                           })
-                          .reduce((total, sedinta) => {
+                          ?.reduce((total, sedinta) => {
                             if (sedinta.starePlata === "neplatit")
                               return total + parseInt(sedinta.Pret);
                             else return total;
@@ -435,7 +467,7 @@ function PlatiElev() {
                         <div>
                           Data Scadenta:{" "}
                           {new Date(
-                            factura?.scadenta.seconds * 1000
+                            factura?.scadenta?.seconds * 1000
                           ).toLocaleDateString()}
                         </div>
                       </div>
