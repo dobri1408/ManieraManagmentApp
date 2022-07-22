@@ -155,7 +155,6 @@ function PlatiElev() {
   };
 
   const facturaCell = (props) => {
-    console.log(props.dataItem.sedintaId);
     return (
       <td
         style={{
@@ -235,7 +234,6 @@ function PlatiElev() {
       );
 
       let result = await platesteCardSedinte(index, selectedSedinte, elevData);
-      console.log(index, result);
     }
   };
 
@@ -314,14 +312,14 @@ function PlatiElev() {
           let getSedintaData = await getSedintaInfo(
             doc(db, "sedinte", sedinta.id)
           );
-          console.log(sedinta.id);
-          console.log({ getSedintaData });
+
           if (getSedintaData)
             array.push({
               ...getSedintaData,
               text: elevData.text,
               Pret: getSedintaData.pretPerSedinta,
               data: getSedintaData.Start,
+              starePlata: getSedintaData.plati[elevData.id].starePlata,
             });
         }
         facturi.push({
@@ -329,11 +327,11 @@ function PlatiElev() {
           sedinte: array,
         });
       }
-      console.log({ facturi });
+
       dispatch(GET_FACTURI(facturi));
     }
   };
-  console.log({ facturiFromRedux });
+
   useEffect(() => {
     constructorFacturi();
   }, [elevData]);
@@ -344,7 +342,7 @@ function PlatiElev() {
       setDeplatit([]);
     }
   }, [elevData]);
-  console.log(selectedSedinte, checked);
+
   const panes = [
     {
       menuItem: "Sedinte Neplatite",
@@ -522,7 +520,7 @@ function PlatiElev() {
                         {"               Total de plata: "}
 
                         {factura?.sedinte?.reduce((total, sedinta) => {
-                          if (sedinta.starePlata === "neplatita")
+                          if (sedinta.starePlata === "neplatit")
                             return total + parseInt(sedinta.Pret);
                           else return total;
                         }, 0)}

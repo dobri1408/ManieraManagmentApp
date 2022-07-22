@@ -13,7 +13,7 @@ export const platesteCashSedinte = async (index, selectedSedinte, elevData) => {
   if (selectedSedinte.current.length > 0) {
     const elevRef = doc(db, "elevi", elevData.id);
     //Remove from sedinte neplatite sedinta
-    console.log("ajung aici");
+
     let array = JSON.parse(JSON.stringify(elevData.sedinteNeplatite));
 
     selectedSedinte.current.forEach(async (dataItem) => {
@@ -21,13 +21,13 @@ export const platesteCashSedinte = async (index, selectedSedinte, elevData) => {
 
       let docSnap = await getDoc(docRef);
       let plati = docSnap?.data()?.plati;
-      console.log({ plati });
+
       plati[elevData.id].starePlata = "cash";
 
       await updateDoc(docRef, {
         plati: plati,
       });
-      console.log("FIREBASE", dataItem.sedintaRefFirebase);
+
       await updateDoc(elevRef, {
         sedinteNeplatite: arrayRemove(dataItem.sedintaRefFirebase),
       });
@@ -46,12 +46,11 @@ export const platesteCashSedinte = async (index, selectedSedinte, elevData) => {
           sedintePlatite: arrayUnion(dataItem),
         });
       let index = array.indexOf(dataItem.sedintaRefFirebase);
-      console.log(index);
+
       array.splice(index, 1);
     });
     let docSnap = await getDoc(elevRef);
 
-    console.log(array);
     return { index: index, sedinteNeplatite: array };
   }
 };
