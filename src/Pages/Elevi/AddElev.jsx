@@ -37,6 +37,9 @@ function AddElev({
   blocFacturaDefault = "",
   apartamentFacturaDefault = "",
   judetFacturaDefault = "",
+  facturiNeplatite = [],
+  sedinteNeplatite = [],
+  numarFacturi = 0,
   contDefault = 0,
   id = "",
 }) {
@@ -94,6 +97,9 @@ function AddElev({
       numarAdresaFactura,
       blocFactura,
       apartamentFactura,
+      numarFacturi,
+      sedinteNeplatite,
+      facturiNeplatite,
       judetFactura,
     });
     dispatch(getElevi());

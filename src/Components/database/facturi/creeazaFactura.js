@@ -22,7 +22,7 @@ export const creeazaFactura = async (selectedSedinte, elevData) => {
       sedinte: sedinte,
       dataEmitere: date,
       scadenta: scadenta,
-      numarFactura: facturi.length + 1,
+      numarFactura: elevData.numarFacturi + 1,
     };
     facturi.push(factura);
 

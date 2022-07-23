@@ -28,17 +28,18 @@ export const getElevi = createAsyncThunk("GET_ELEVI", async () => {
   const querySnapshot = await getDocs(collection(db, "elevi"));
 
   let array = [];
-
-  querySnapshot.forEach((doc) => {
-    array.push({
-      ...doc.data(),
-      id: doc.id,
-      text: doc.data().prenume + " " + doc.data().numeDeFamilie,
-      value: doc.id,
-      color: getRandomColor(),
-      cont: parseInt(doc.data().cont),
+  if (querySnapshot)
+    querySnapshot.forEach((doc) => {
+      console.log(doc.data());
+      array.push({
+        ...doc.data(),
+        id: doc.id,
+        text: doc.data().prenume + " " + doc.data().numeDeFamilie,
+        value: doc.id,
+        color: getRandomColor(),
+        cont: parseInt(doc.data().cont || 0),
+      });
     });
-  });
   array.sort();
   console.log("ElEVI", array);
   return {

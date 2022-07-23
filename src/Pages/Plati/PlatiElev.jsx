@@ -9,6 +9,7 @@ import { getSedintaInfo } from "../../Components/database/sedinte/getSedintaInfo
 import { creeazaFactura } from "../../Components/database/facturi/creeazaFactura";
 import { platesteCashSedinte } from "../../Components/database/plati/platesteCashSedinte";
 import { platesteCardSedinte } from "../../Components/database/plati/platesteCardSedinte";
+import { actualizeazaNumarFacturi } from "../../Components/database/facturi/actualizeazaNumarFacturi";
 import {
   Icon,
   Tab,
@@ -33,6 +34,7 @@ const {
   GET_FACTURI,
   ACTUALIZARE_ELEV_FACTURI_NEPLATITE,
   ACTUALIZARE_CONT_ELEV,
+  ACTUALIZARE_NUMAR_FACTURI_ELEV,
 } = actions;
 const initialSort = [
   {
@@ -92,7 +94,21 @@ function PlatiElev() {
       })
     );
   };
+  const actualizeazaNumarFacturiRedux = (elevData, numarFacturi) => {
+    let index = eleviFromRedux.indexOf(elevData);
+    dispatch(
+      ACTUALIZARE_NUMAR_FACTURI_ELEV({
+        index: index,
+        numarFacturi: numarFacturi,
+      })
+    );
+  };
 
+  const RenderScadenta = (scadenta) => {
+    if (scadenta.seconds)
+      return new Date(scadenta.seconds * 1000).toLocaleDateString();
+    else return scadenta;
+  };
   const actualizeazaContElevRedux = (cont) => {
     let index = eleviFromRedux.indexOf(elevData);
     dispatch(ACTUALIZARE_CONT_ELEV({ index: index, cont: cont }));
@@ -212,6 +228,7 @@ function PlatiElev() {
     }
   };
   const factura = async () => {
+    const numarFacturi = elevData.numarFacturi + 1;
     let facturi = JSON.parse(JSON.stringify(elevData.facturiNeplatite || []));
     let today = new Date();
     let date =
@@ -231,10 +248,12 @@ function PlatiElev() {
       sedinte: sedinte,
       dataEmitere: date,
       scadenta: scadenta,
-      numarFactura: facturi.length + 1,
+      numarFactura: elevData.numarFacturi + 1,
     };
     actualizeazaFacturiRedux(factura);
+    actualizeazaNumarFacturiRedux(elevData, numarFacturi);
     await creeazaFactura(selectedSedinte, elevData);
+    await actualizeazaNumarFacturi(elevData, numarFacturi);
   };
   const platesteCardAll = async () => {
     if (selectedSedinte?.current?.length > 0) {
@@ -510,7 +529,7 @@ function PlatiElev() {
       ),
     },
     {
-      menuItem: "Facturi",
+      menuItem: "Facturi Neplatite",
       render: () => (
         <Tab.Pane>
           <Accordion styled style={{ width: "100%" }}>
@@ -554,10 +573,7 @@ function PlatiElev() {
                       </div>
                       <div>
                         <div>
-                          Data Scadenta:{" "}
-                          {new Date(
-                            factura?.scadenta?.seconds * 1000
-                          ).toLocaleDateString()}
+                          Data Scadenta: {RenderScadenta(factura.scadenta)}
                         </div>
                       </div>
                     </Accordion.Title>
@@ -668,6 +684,12 @@ function PlatiElev() {
           </Accordion>
         </Tab.Pane>
       ),
+    },
+    {
+      menuItem: "Facturi Platite",
+      render: () => {
+        <> </>;
+      },
     },
   ];
   return (

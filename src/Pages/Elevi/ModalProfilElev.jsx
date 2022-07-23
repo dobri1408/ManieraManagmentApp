@@ -99,6 +99,9 @@ function ModalProfilElev({ show, setShow, studentData, setStudentData }) {
         blocFacturaDefault={studentData?.blocFactura}
         apartamentFacturaDefault={studentData?.apartamentFactura}
         judetFacturaDefault={studentData?.judetFactura}
+        facturiNeplatite={studentData?.facturiNeplatite}
+        sedinteNeplatite={studentData?.sedinteNeplatite}
+        numarFacturi={studentData?.numarFacturi}
       />
       <Modal.Header>Detalii Elev</Modal.Header>
       <Modal.Content image scrolling>

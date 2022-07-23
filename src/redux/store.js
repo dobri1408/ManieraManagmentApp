@@ -94,6 +94,15 @@ export const testSlice = createSlice({
         elevi: elevi,
       };
     },
+    ACTUALIZARE_NUMAR_FACTURI_ELEV: (state, action) => {
+      let elevi = JSON.parse(JSON.stringify(state.elevi));
+      elevi[action.payload.index].numarFacturi =
+        action.payload.numarFacturi || 0;
+      return {
+        ...state,
+        elevi: elevi,
+      };
+    },
     GET_MATERII: (state, action) => ({
       ...state,
       materii: action.payload,
