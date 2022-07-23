@@ -85,6 +85,15 @@ export const testSlice = createSlice({
         elevi: elevi,
       };
     },
+    ACTUALIZARE_CONT_ELEV: (state, action) => {
+      let elevi = JSON.parse(JSON.stringify(state.elevi));
+      elevi[action.payload.index].cont = action.payload.cont;
+      console.log("REDIX", elevi);
+      return {
+        ...state,
+        elevi: elevi,
+      };
+    },
     GET_MATERII: (state, action) => ({
       ...state,
       materii: action.payload,

@@ -29,7 +29,11 @@ import { testSlice } from "../../redux/store";
 import { setExpandedState } from "@progress/kendo-react-data-tools";
 const { actions } = testSlice;
 const { ACTUALIZARE_ELEVI_Sedinte_Neplatite } = actions;
-const { GET_FACTURI, ACTUALIZARE_ELEV_FACTURI_NEPLATITE } = actions;
+const {
+  GET_FACTURI,
+  ACTUALIZARE_ELEV_FACTURI_NEPLATITE,
+  ACTUALIZARE_CONT_ELEV,
+} = actions;
 const initialSort = [
   {
     field: "materie",
@@ -89,6 +93,10 @@ function PlatiElev() {
     );
   };
 
+  const actualizeazaContElevRedux = (cont) => {
+    let index = eleviFromRedux.indexOf(elevData);
+    dispatch(ACTUALIZARE_CONT_ELEV({ index: index, cont: cont }));
+  };
   const actualizeazaFacturiRedux = (factura) => {
     let array = [];
     facturiFromRedux.forEach((fact) => array.push(fact));
@@ -132,6 +140,8 @@ function PlatiElev() {
   };
   const platesteCash = async (dataItem) => {
     actualizeazaSedinteNeplatiteRedux({ current: [dataItem] });
+    let cont = parseInt(elevData.cont) - parseInt(dataItem.Pret);
+    actualizeazaContElevRedux(cont);
     await platesteCashSedinte(0, { current: [dataItem] }, elevData);
   };
   const platesteCard = async (dataItem) => {
@@ -232,7 +242,13 @@ function PlatiElev() {
       let index = eleviFromRedux.indexOf(
         eleviFromRedux.find((element) => element.id === elevData.id)
       );
-
+      let cont =
+        parseInt(elevData.cont) -
+        selectedSedinte.current.reduce(
+          (total, element) => total + parseInt(element.Pret),
+          0
+        );
+      actualizeazaContElevRedux(cont);
       let result = await platesteCardSedinte(index, selectedSedinte, elevData);
     }
   };
@@ -513,10 +529,9 @@ function PlatiElev() {
                     >
                       <Icon name="dropdown" />
                       Factura nr O_{factura?.numarFactura} -
-                      <div style={{ color: "#32ba4d", fontWeight: "bold" }}>
-                        Data Emitere: {factura?.dataEmitere}
-                      </div>
-                      <div style={{ color: "red" }}>
+                      <div
+                        style={{ color: "red", display: "flex", gap: "10px" }}
+                      >
                         {"               Total de plata: "}
 
                         {factura?.sedinte?.reduce((total, sedinta) => {
@@ -524,6 +539,18 @@ function PlatiElev() {
                             return total + parseInt(sedinta.Pret);
                           else return total;
                         }, 0)}
+                        {factura?.sedinte?.reduce((total, sedinta) => {
+                          if (sedinta.starePlata === "neplatit")
+                            return total + parseInt(sedinta.Pret);
+                          else return total;
+                        }, 0) === 0 && (
+                          <p style={{ color: "green", fontWeight: "bold" }}>
+                            (PLATITA)
+                          </p>
+                        )}
+                      </div>
+                      <div style={{ color: "#9B870D", fontWeight: "bold" }}>
+                        Data Emitere: {factura?.dataEmitere}
                       </div>
                       <div>
                         <div>
@@ -535,7 +562,7 @@ function PlatiElev() {
                       </div>
                     </Accordion.Title>
                     <Accordion.Content active={activeIndex === index}>
-                      <div>
+                      <div style={{ display: "flex" }}>
                         <Button
                           style={{
                             backgroundColor: "yellow",
@@ -549,51 +576,58 @@ function PlatiElev() {
                         >
                           <Icon name="download" /> Descarca Factura
                         </Button>
+                        {factura?.sedinte?.reduce((total, sedinta) => {
+                          if (sedinta.starePlata === "neplatit")
+                            return total + parseInt(sedinta.Pret);
+                          else return total;
+                        }, 0) > 0 && (
+                          <div>
+                            <Button
+                              style={{
+                                backgroundColor: "#32ba4d",
+                                color: "white",
+                                width: "12vw",
+                              }}
+                              onClick={() => {
+                                setWichAction("platesteFacturaCash");
+                                setProosForAction(factura);
+                                setConfirmationShow(true);
+                              }}
+                            >
+                              <Icon name="money bill" />
+                              Plateste CASH
+                            </Button>
 
-                        <Button
-                          style={{
-                            backgroundColor: "#32ba4d",
-                            color: "white",
-                            width: "12vw",
-                          }}
-                          onClick={() => {
-                            setWichAction("platesteFacturaCash");
-                            setProosForAction(factura);
-                            setConfirmationShow(true);
-                          }}
-                        >
-                          <Icon name="money bill" />
-                          Plateste CASH
-                        </Button>
-
-                        <Button
-                          style={{ color: "black", width: "15vw" }}
-                          onClick={() => {
-                            setWichAction("platesteFacturaCard");
-                            setProosForAction(factura);
-                            setConfirmationShow(true);
-                          }}
-                        >
-                          <Icon
-                            name="credit card outline"
-                            style={{ color: "black" }}
-                          />
-                          Plateste din Cont
-                        </Button>
-                        <Button
-                          style={{
-                            backgroundColor: "#274653",
-                            width: "15vw",
-                            color: "white",
-                          }}
-                          onClick={() => {
-                            setWichAction("PlatesteFacturaLinkDePlata");
-                            setConfirmationShow(true);
-                          }}
-                        >
-                          <Icon name="staylinked" />
-                          Plateste cu Link de Plata
-                        </Button>
+                            <Button
+                              style={{ color: "black", width: "15vw" }}
+                              onClick={() => {
+                                setWichAction("platesteFacturaCard");
+                                setProosForAction(factura);
+                                setConfirmationShow(true);
+                              }}
+                            >
+                              <Icon
+                                name="credit card outline"
+                                style={{ color: "black" }}
+                              />
+                              Plateste din Cont
+                            </Button>
+                            <Button
+                              style={{
+                                backgroundColor: "#274653",
+                                width: "15vw",
+                                color: "white",
+                              }}
+                              onClick={() => {
+                                setWichAction("PlatesteFacturaLinkDePlata");
+                                setConfirmationShow(true);
+                              }}
+                            >
+                              <Icon name="staylinked" />
+                              Plateste cu Link de Plata
+                            </Button>
+                          </div>
+                        )}
                       </div>
                       Sedinte:
                       <Grid
