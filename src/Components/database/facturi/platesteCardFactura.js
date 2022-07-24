@@ -13,7 +13,7 @@ export const platesteFacturaCard = async (factura, elevData) => {
     let total = 0;
     factura.sedinte.forEach(async (dataItem) => {
       let docRef = doc(db, "sedinte", dataItem.TaskID);
-      console.log({ dataItem });
+
       if (dataItem.starePlata === "neplatit") total += parseInt(dataItem.Pret);
       let docSnap = await getDoc(docRef);
 
@@ -24,7 +24,6 @@ export const platesteFacturaCard = async (factura, elevData) => {
         plati: plati,
       });
 
-      console.log("Sedinta Ref", dataItem.sedintaRefFirebase);
       let arraySedinte = [];
       elevData.sedinteNeplatite.forEach((sedintaNeplatita) => {
         if (
@@ -45,7 +44,7 @@ export const platesteFacturaCard = async (factura, elevData) => {
     });
     await updateDoc(doc(db, "elevi", elevData.id), {
       facturiNeplatite: facturiNeplatite,
-    }).catch((err) => console.log("ERROR", err));
+    });
     await setDoc(
       doc(
         db,

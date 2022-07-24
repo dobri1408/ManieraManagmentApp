@@ -69,7 +69,7 @@ export const testSlice = createSlice({
       let elevi = JSON.parse(JSON.stringify(state.elevi));
       elevi[action.payload.index].sedinteNeplatite =
         action.payload.sedinteNeplatite;
-      console.log("REDIX", elevi);
+
       return {
         ...state,
         elevi: elevi,
@@ -79,7 +79,7 @@ export const testSlice = createSlice({
       let elevi = JSON.parse(JSON.stringify(state.elevi));
       elevi[action.payload.index].facturiNeplatite =
         action.payload.facturiNeplatite;
-      console.log("REDIX", elevi);
+
       return {
         ...state,
         elevi: elevi,
@@ -88,7 +88,7 @@ export const testSlice = createSlice({
     ACTUALIZARE_CONT_ELEV: (state, action) => {
       let elevi = JSON.parse(JSON.stringify(state.elevi));
       elevi[action.payload.index].cont = action.payload.cont;
-      console.log("REDIX", elevi);
+
       return {
         ...state,
         elevi: elevi,
@@ -108,7 +108,6 @@ export const testSlice = createSlice({
       materii: action.payload,
     }),
     GET_FACTURI: (state, action) => {
-      console.log(action);
       return { ...state, facturiNeplatite: action.payload };
     },
 

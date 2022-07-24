@@ -30,7 +30,6 @@ export const getElevi = createAsyncThunk("GET_ELEVI", async () => {
   let array = [];
   if (querySnapshot)
     querySnapshot.forEach((doc) => {
-      console.log(doc.data());
       array.push({
         ...doc.data(),
         id: doc.id,
@@ -41,7 +40,7 @@ export const getElevi = createAsyncThunk("GET_ELEVI", async () => {
       });
     });
   array.sort();
-  console.log("ElEVI", array);
+
   return {
     payload: {
       array,
