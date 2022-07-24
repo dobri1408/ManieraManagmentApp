@@ -74,6 +74,33 @@ function PlatiElev() {
   const [propsForAction, setProosForAction] = useState({});
   const [facturiData, setFacturiData] = useState([]);
   const facturiFromRedux = useSelector((state) => state.facturiNeplatite);
+
+  const removeFacturaFromRedux = (factura) => {
+    let array = [];
+    facturiFromRedux.forEach((fact) => {
+      if (fact === factura) {
+      } else array.push(fact);
+    });
+    dispatch(GET_FACTURI(array));
+  };
+
+  const removeFacturaFromElevDataRedux = (factura) => {
+    let facturaElevData = elevData.facturiNeplatite.find(
+      (fact) => fact.scadenta === factura.scadenta
+    );
+    let array = [];
+    let index = eleviFromRedux.indexOf(elevData);
+    elevData.facturiNeplatite.forEach((factura) => {
+      if (factura === facturaElevData) {
+      } else array.push(factura);
+    });
+    dispatch(
+      ACTUALIZARE_ELEV_FACTURI_NEPLATITE({
+        index: index,
+        facturiNeplatite: array,
+      })
+    );
+  };
   const actualizeazaSedinteNeplatiteRedux = (selectedSedinte) => {
     let array = [];
     let index = eleviFromRedux.indexOf(elevData);
@@ -242,7 +269,11 @@ function PlatiElev() {
     let sedinte = [];
 
     selectedSedinte.current.forEach((sedinta) => {
-      sedinte.push({ id: sedinta.sedintaId, date: sedinta.data });
+      sedinte.push({
+        id: sedinta.sedintaId,
+        date: sedinta.data,
+        sedintaRefFirebase: { ...sedinta.sedintaRefFirebase },
+      });
     });
     let factura = {
       sedinte: sedinte,
@@ -250,7 +281,9 @@ function PlatiElev() {
       scadenta: scadenta,
       numarFactura: elevData.numarFacturi + 1,
     };
+
     actualizeazaFacturiRedux(factura);
+    delete factura.facturaElevData;
     actualizeazaNumarFacturiRedux(elevData, numarFacturi);
     await creeazaFactura(selectedSedinte, elevData);
     await actualizeazaNumarFacturi(elevData, numarFacturi);
@@ -355,6 +388,12 @@ function PlatiElev() {
               Pret: getSedintaData.pretPerSedinta,
               data: getSedintaData.Start,
               starePlata: getSedintaData.plati[elevData.id].starePlata,
+              sedintaRefFirebase: elevData.sedinteNeplatite.find(
+                (sedinta) =>
+                  sedinta.sedintaID +
+                    Date.parse(new Date(sedinta.date.seconds * 1000)) ===
+                  getSedintaData.TaskID
+              ),
             });
         }
         facturi.push({
@@ -536,7 +575,6 @@ function PlatiElev() {
             {
               //e obiect
               facturiFromRedux?.map((factura, index) => {
-                console.log({ factura });
                 return (
                   <>
                     <Accordion.Title
@@ -613,21 +651,38 @@ function PlatiElev() {
                               <Icon name="money bill" />
                               Plateste CASH
                             </Button>
-
-                            <Button
-                              style={{ color: "black", width: "15vw" }}
-                              onClick={() => {
-                                setWichAction("platesteFacturaCard");
-                                setProosForAction(factura);
-                                setConfirmationShow(true);
-                              }}
-                            >
-                              <Icon
-                                name="credit card outline"
-                                style={{ color: "black" }}
-                              />
-                              Plateste din Cont
-                            </Button>
+                            {factura?.sedinte?.reduce((total, sedinta) => {
+                              if (sedinta.starePlata === "neplatit")
+                                return total + parseInt(sedinta.Pret);
+                              else return total;
+                            }, 0) <= parseInt(elevData?.cont) && (
+                              <Button
+                                style={{ color: "black", width: "15vw" }}
+                                onClick={() => {
+                                  setWichAction("platesteFacturaCard");
+                                  setProosForAction(factura);
+                                  setConfirmationShow(true);
+                                }}
+                              >
+                                <Icon
+                                  name="credit card outline"
+                                  style={{ color: "black" }}
+                                />
+                                Plateste din Cont
+                              </Button>
+                            )}
+                            {factura?.sedinte?.reduce((total, sedinta) => {
+                              if (sedinta.starePlata === "neplatit")
+                                return total + parseInt(sedinta.Pret);
+                              else return total;
+                            }, 0) > parseInt(elevData?.cont) && (
+                              <Button
+                                style={{ backgroundColor: "grey" }}
+                                disable
+                              >
+                                Fonduri Insuficiente
+                              </Button>
+                            )}
                             <Button
                               style={{
                                 backgroundColor: "#274653",
@@ -722,9 +777,27 @@ function PlatiElev() {
             } else if (whichAction === "factura") {
               await factura();
             } else if (whichAction === "platesteFacturaCash") {
-              platesteFacturaCash(propsForAction, elevData);
+              removeFacturaFromRedux(propsForAction);
+              actualizeazaSedinteNeplatiteRedux({
+                current: propsForAction.sedinte,
+              });
+              removeFacturaFromElevDataRedux(propsForAction);
+              await platesteFacturaCash(propsForAction, elevData);
             } else if (whichAction === "platesteFacturaCard") {
-              platesteFacturaCard(propsForAction, elevData);
+              let cont =
+                parseInt(elevData.cont) -
+                propsForAction.sedinte.reduce((total, element) => {
+                  if (element.starePlata === "neplatit")
+                    return total + parseInt(element.Pret);
+                  return total;
+                }, 0);
+              actualizeazaContElevRedux(cont);
+              removeFacturaFromRedux(propsForAction);
+              actualizeazaSedinteNeplatiteRedux({
+                current: propsForAction.sedinte,
+              });
+              removeFacturaFromElevDataRedux(propsForAction);
+              await platesteFacturaCard(propsForAction, elevData);
             } else if (whichAction === "PlatesteFacturaLinkDePlata") {
               platesteFacturaLinkDePlata();
             }

@@ -17,7 +17,7 @@ export const platesteCardSedinte = async (index, selectedSedinte, elevData) => {
 
       let docSnap = await getDoc(docRef);
       let plati = docSnap?.data()?.plati;
-      console.log({ plati });
+
       plati[elevData.id].starePlata = "card";
       total += parseInt(dataItem.Pret);
       updateDoc(docRef, {

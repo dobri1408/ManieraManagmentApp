@@ -1,45 +1,16 @@
 import { db } from "../../../firebase/firebase";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import {
+  doc,
+  updateDoc,
+  getDoc,
+  arrayRemove,
+  setDoc,
+  arrayUnion,
+} from "firebase/firestore";
 export const platesteFacturaCash = async (factura, elevData) => {
   if (factura.sedinte.length > 0) {
-    const elevRef = doc(db, "elevi", elevData.id);
-
-    let meditatiii = JSON.parse(JSON.stringify(elevData.meditatii));
-    factura.sedinte.forEach((dataItem) => {
-      let MeditatieToFind = meditatiii.find(
-        (meditatie) => meditatie.TaskID === dataItem.TaskID
-      );
-      let indexEL = meditatiii.indexOf(MeditatieToFind);
-
-      let sedinta = MeditatieToFind.sedinte.find(
-        (sedinta) => sedinta.sedintaID === dataItem.sedintaID
-      );
-      let index = MeditatieToFind.sedinte.indexOf(sedinta);
-
-      meditatiii[indexEL].sedinte[index].starePlata = "cash";
-    });
-    let facuturiCopy = JSON.parse(JSON.stringify(elevData.facturi));
-    let facturaIndex = elevData.facturi.indexOf(factura);
-
-    let sedinte = JSON.parse(JSON.stringify(factura.sedinte));
-    for (let i = 0; i < facuturiCopy[facturaIndex].sedinte.length; i++)
-      facuturiCopy[facturaIndex].sedinte[i].starePlata = "cash";
-
-    await updateDoc(
-      elevRef,
-      {
-        meditatiii: meditatiii,
-        facturi: facuturiCopy,
-      },
-      { merge: true }
-    );
-
     factura.sedinte.forEach(async (dataItem) => {
-      let docRef = doc(
-        db,
-        "sedinte",
-        dataItem.sedintaID + Date.parse(new Date(dataItem.data.seconds * 1000))
-      );
+      let docRef = doc(db, "sedinte", dataItem.TaskID);
 
       let docSnap = await getDoc(docRef);
 
@@ -49,6 +20,43 @@ export const platesteFacturaCash = async (factura, elevData) => {
       await updateDoc(docRef, {
         plati: plati,
       });
+      let elevRef = doc(db, "elevi", elevData.id);
+      console.log("Sedinta Ref", dataItem.sedintaRefFirebase);
+      let arraySedinte = [];
+      elevData.sedinteNeplatite.forEach((sedintaNeplatita) => {
+        if (
+          sedintaNeplatita.sedintaID === dataItem.sedintaRefFirebase.sedintaID
+        ) {
+        } else arraySedinte.push(sedintaNeplatita);
+      });
+      await updateDoc(elevRef, {
+        sedinteNeplatite: arraySedinte,
+      });
     });
+    //AICI AR MAI TREBUI PUS IN SEDINTEPLATITE, Insa consider ca nu mai e nevoie de baza asta, deoarece se pun in facutri platite, si pot fi urmarite de acolo
+
+    let facturiNeplatite = [];
+    elevData.facturiNeplatite.forEach((fact) => {
+      if (fact.numarFactura === factura.numarFactura) {
+      } else facturiNeplatite.push(fact);
+    });
+    await updateDoc(doc(db, "elevi", elevData.id), {
+      facturiNeplatite: facturiNeplatite,
+    }).catch((err) => console.log("ERROR", err));
+    await setDoc(
+      doc(
+        db,
+        "facturiPlatite",
+        elevData.id +
+          "luna" +
+          new Date().getMonth() +
+          "an" +
+          new Date().getYear()
+      ),
+      {
+        facturiPlatite: arrayUnion(factura),
+      },
+      { merge: true }
+    );
   }
 };

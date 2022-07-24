@@ -111,6 +111,7 @@ export const testSlice = createSlice({
       console.log(action);
       return { ...state, facturiNeplatite: action.payload };
     },
+
     GET_MEDITATII: (state, action) => ({
       ...state,
       profesori: action.payload,
